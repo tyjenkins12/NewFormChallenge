@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ReportConfig {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  schedule     String   // cron expression
+  enabled      Boolean  @default(true)
+  allowedSites String[] // domain whitelist
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  runs    ReportRun[]
+  reports Report[]
+
+  @@map("report_configs")
+}
+
+model ReportRun {
+  id            String         @id @default(cuid())
+  configId      String
+  status        ReportRunStatus @default(PENDING)
+  startedAt     DateTime       @default(now())
+  completedAt   DateTime?
+  duration      Int?           // milliseconds
+  retryCount    Int            @default(0)
+  lastErrorCode String?
+  lastErrorSnippet String?
+  rawPayload    Json?
+
+  config ReportConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+  report Report?
+
+  @@map("report_runs")
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  runId       String   @unique
+  configId    String
+  slug        String   @unique
+  title       String
+  summary     String?
+  kpis        Json     // pre-computed KPI deltas
+  rawData     Json     // full analysis data
+  emailHtml   String?  // immutable email HTML
+  deliveryMethod String // "link" | "email"
+  deliveryTarget String? // email address
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  run    ReportRun    @relation(fields: [runId], references: [id], onDelete: Cascade)
+  config ReportConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+
+  @@map("reports")
+}
+
+model DemoCache {
+  id         String   @id @default(cuid())
+  key        String   @unique
+  data       Json
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  @@map("demo_cache")
+}
+
+enum ReportRunStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}

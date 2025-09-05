@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Analytics Report - NewFormApi Integration</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header { 
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white; 
+            padding: 40px 30px; 
+            text-align: center; 
+        }
+        .header h1 { 
+            font-size: 2.5rem; 
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header p { 
+            font-size: 1.1rem; 
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 15px;
+        }
+        .content { padding: 40px 30px; }
+        .ai-section { 
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: white; 
+            padding: 35px; 
+            border-radius: 12px; 
+            margin-bottom: 40px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        .ai-section h2 { 
+            font-size: 1.8rem; 
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .ai-section .icon { 
+            margin-right: 15px; 
+            font-size: 2rem;
+        }
+        .ai-content { 
+            line-height: 1.7; 
+            white-space: pre-line;
+            font-size: 1.05rem;
+        }
+        .ai-footer {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        .metrics-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 25px; 
+            margin: 40px 0; 
+        }
+        .metric-card { 
+            background: white; 
+            padding: 25px; 
+            border-radius: 12px; 
+            text-align: center;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+        .metric-card h3 { 
+            color: #6b7280; 
+            font-size: 0.9rem; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+        .metric-card .value { 
+            font-size: 2.2rem; 
+            font-weight: 700; 
+            color: #111827;
+            margin-bottom: 8px;
+        }
+        .section {
+            background: white;
+            margin: 30px 0;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        .section-header {
+            background: #f8fafc;
+            padding: 25px 30px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .section-header h2 {
+            font-size: 1.5rem;
+            color: #111827;
+            display: flex;
+            align-items: center;
+        }
+        .section-header .icon {
+            margin-right: 12px;
+            font-size: 1.5rem;
+        }
+        .section-content { padding: 30px; }
+        .page-grid, .source-grid { 
+            display: grid; 
+            gap: 15px; 
+        }
+        .page-item, .source-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        .item-info h4 {
+            font-size: 1.1rem;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+        .item-info p {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        .item-stats {
+            text-align: right;
+        }
+        .item-stats .views {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #111827;
+        }
+        .change {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .change.positive { color: #10b981; }
+        .change.negative { color: #ef4444; }
+        .change.neutral { color: #6b7280; }
+        .footer { 
+            text-align: center; 
+            padding: 30px;
+            background: #f8fafc;
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+        .footer .tech-stack {
+            margin-top: 15px;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🚀 AI-Powered Analytics Report</h1>
+            <p>Intelligent insights powered by OpenAI GPT-4</p>
+            <p>Data integration via NewFormApi • Generated 9/5/2025, 9:05:46 AM</p>
+            <div class="badge">✨ Real AI Analysis • Live Data Integration</div>
+        </header>
+
+        <div class="content">
+            <!-- AI Analysis Section -->
+            <div class="ai-section">
+                <h2><span class="icon">🤖</span>Strategic AI Analysis</h2>
+                <div class="ai-content">Based on the comprehensive analytics data provided, here are the key insights and strategic marketing recommendations:
+
+**Performance Overview:**
+The website is demonstrating strong performance with 45,200 page views and 18,400 unique visitors, indicating good reach and engagement potential. The 29% bounce rate is particularly encouraging, showing that visitors are finding the content relevant and staying to explore multiple pages.
+
+**Key Strengths:**
+1. **High Conversion Rate (5.2%)** - This is significantly above industry averages, suggesting your value proposition and user experience are well-optimized
+2. **Strong Session Duration (298 seconds)** - Nearly 5 minutes per session indicates high content engagement
+3. **Organic Search Dominance** - 53% of traffic from organic search shows strong SEO performance
+
+**Growth Opportunities:**
+1. **Homepage Optimization** - With 37% of total views, the homepage is your primary conversion driver. The 18% growth indicates momentum that should be leveraged
+2. **Product Page Enhancement** - 31% of views with 15% growth suggests this is where purchase intent is highest
+3. **Social Media Expansion** - 48% growth in social traffic represents your fastest-growing channel
+
+**Strategic Recommendations:**
+
+1. **Double Down on Social Media**: With 48% growth, this channel has the highest momentum. Increase content creation and engagement initiatives.
+
+2. **Optimize Product Pages**: These pages show strong growth (15%) and likely represent high purchase intent. Focus on:
+   - Enhanced product descriptions
+   - Customer reviews and testimonials
+   - Clear calls-to-action
+   - Product comparison tools
+
+3. **Leverage Homepage Traffic**: With the highest traffic volume and solid growth, optimize for:
+   - Clear value propositions
+   - Strategic CTAs leading to products/services
+   - Trust signals and social proof
+
+4. **Address Underperforming Channels**: Services pages show -8% decline, indicating need for content refresh or repositioning.
+
+5. **Email Marketing Opportunity**: Only 15% growth suggests untapped potential. Consider:
+   - Newsletter optimization
+   - Automated email sequences
+   - Personalization initiatives
+
+**Immediate Action Items:**
+- A/B test social media content formats to maximize the 48% growth trend
+- Audit and refresh services page content to reverse the -8% decline
+- Implement enhanced tracking on product pages to understand conversion paths
+- Create targeted email campaigns for the high-intent product page visitors
+
+This data suggests a healthy, growing digital presence with specific opportunities for strategic optimization across key channels.</div>
+                <div class="ai-footer">
+                    🧠 Analysis generated by OpenAI GPT-4 in ~12 seconds<br>
+                    📊 Based on real analytics data pulled from NewFormApi integration
+                </div>
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="section">
+                <div class="section-header">
+                    <h2><span class="icon">📊</span>Key Performance Metrics</h2>
+                </div>
+                <div class="section-content">
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <h3>Total Page Views</h3>
+                            <div class="value">45,200</div>
+                            <div class="change positive">+15% vs last month</div>
+                        </div>
+                        <div class="metric-card">
+                            <h3>Unique Visitors</h3>
+                            <div class="value">18,400</div>
+                            <div class="change positive">+8% vs last month</div>
+                        </div>
+                        <div class="metric-card">
+                            <h3>Bounce Rate</h3>
+                            <div class="value">29.0%</div>
+                            <div class="change positive">-12% improvement</div>
+                        </div>
+                        <div class="metric-card">
+                            <h3>Conversion Rate</h3>
+                            <div class="value">5.20%</div>
+                            <div class="change positive">+3% vs last month</div>
+                        </div>
+                        <div class="metric-card">
+                            <h3>Avg Session Duration</h3>
+                            <div class="value">298s</div>
+                            <div class="change positive">+6% vs last month</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Pages -->
+            <div class="section">
+                <div class="section-header">
+                    <h2><span class="icon">📈</span>Top Performing Pages</h2>
+                </div>
+                <div class="section-content">
+                    <div class="page-grid">
+                        
+                            <div class="page-item">
+                                <div class="item-info">
+                                    <h4>/</h4>
+                                    <p>Homepage - Primary entry point</p>
+                                </div>
+                                <div class="item-stats">
+                                    <div class="views">16,800 views</div>
+                                    <span class="change positive">+18.0%</span>
+                                </div>
+                            </div>
+                        
+                            <div class="page-item">
+                                <div class="item-info">
+                                    <h4>/products</h4>
+                                    <p>Product catalog and listings</p>
+                                </div>
+                                <div class="item-stats">
+                                    <div class="views">14,200 views</div>
+                                    <span class="change positive">+15.0%</span>
+                                </div>
+                            </div>
+                        
+                            <div class="page-item">
+                                <div class="item-info">
+                                    <h4>/services</h4>
+                                    <p>Service offerings and packages</p>
+                                </div>
+                                <div class="item-stats">
+                                    <div class="views">8,900 views</div>
+                                    <span class="change negative">-8.0%</span>
+                                </div>
+                            </div>
+                        
+                            <div class="page-item">
+                                <div class="item-info">
+                                    <h4>/about</h4>
+                                    <p>Company information and team</p>
+                                </div>
+                                <div class="item-stats">
+                                    <div class="views">3,200 views</div>
+                                    <span class="change positive">+22.0%</span>
+                                </div>
+                            </div>
+                        
+                            <div class="page-item">
+                                <div class="item-info">
+                                    <h4>/contact</h4>
+                                    <p>Contact forms and information</p>
+                                </div>
+                                <div class="item-stats">
+                                    <div class="views">2,100 views</div>
+                                    <span class="change positive">+31.0%</span>
+                                </div>
+                            </div>
+                        
+                    </div>
+                </div>
+            </div>
+
+            <!-- Traffic Sources -->
+            <div class="section">
+                <div class="section-header">
+                    <h2><span class="icon">🎯</span>Traffic Source Analysis</h2>
+                </div>
+                <div class="section-content">
+                    <div class="source-grid">
+                        
+                            <div class="source-item">
+                                <div class="item-info">
+                                    <h4>Organic Search</h4>
+                                    <p>53% of total traffic</p>
+                                </div>
+                                <div class="item-stats">
+                                    <div class="views">9,800 visitors</div>
+                                    <span class="change positive">+12.0%</span>
+                                </div>
+                            </div>
+                        
+                            <div class="source-item">
+                                <div class="item-info">
+                                    <h4>Direct Traffic</h4>
+                                    <p>23% of total traffic</p>
+                                </div>
+                                <div class="item-stats">
+                                    <div class="views">4,200 visitors</div>
+                                    <span class="change negative">-3.0%</span>
+                                </div>
+                            </div>
+                        
+                            <div class="source-item">
+                                <div class="item-info">
+                                    <h4>Social Media</h4>
+                                    <p>13% of total traffic</p>
+                                </div>
+                                <div class="item-stats">
+                                    <div class="views">2,400 visitors</div>
+                                    <span class="change positive">+48.0%</span>
+                                </div>
+                            </div>
+                        
+                            <div class="source-item">
+                                <div class="item-info">
+                                    <h4>Email Marketing</h4>
+                                    <p>8% of total traffic</p>
+                                </div>
+                                <div class="item-stats">
+                                    <div class="views">1,400 visitors</div>
+                                    <span class="change positive">+15.0%</span>
+                                </div>
+                            </div>
+                        
+                            <div class="source-item">
+                                <div class="item-info">
+                                    <h4>Paid Advertising</h4>
+                                    <p>3% of total traffic</p>
+                                </div>
+                                <div class="item-stats">
+                                    <div class="views">600 visitors</div>
+                                    <span class="change negative">-12.0%</span>
+                                </div>
+                            </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p><strong>Report Generated Successfully</strong></p>
+            <div class="tech-stack">
+                🔧 Tech Stack: NewFormApi Integration • OpenAI GPT-4 Analysis • PostgreSQL Storage<br>
+                🚀 Report Runner v1.0 • NextJS • TypeScript • Tailwind CSS
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
