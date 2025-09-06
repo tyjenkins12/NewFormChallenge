@@ -1,17 +1,17 @@
 {
   "config": {
-    "platform": "tiktok",
+    "platform": "meta",
     "metrics": [
       "spend",
       "impressions",
       "clicks"
     ],
-    "level": "AUCTION_CAMPAIGN",
-    "breakdowns": [],
-    "dimensions": [
-      "campaign_id"
+    "level": "adset",
+    "breakdowns": [
+      "age"
     ],
-    "dateRangeEnum": "lifetime",
+    "dimensions": [],
+    "dateRangeEnum": "last30",
     "cadence": "manual",
     "cronExpression": "",
     "delivery": "email",
@@ -28,23 +28,30 @@
       "enabled": false,
       "accelerated": false
     },
-    "id": "c84182d7-0f05-48ac-8744-fe0f9ebe82ba"
+    "id": "9c6623bf-5496-4ccb-aedb-aefff5254b94"
   },
   "status": {
     "isRunning": false,
-    "lastRun": "2025-09-06T19:59:08.915Z",
-    "reportPath": "/reports/report-76df898b-5a48-41fa-9793-fb9729ea90e4.html",
-    "pdfPath": "/reports/report-76df898b-5a48-41fa-9793-fb9729ea90e4.pdf"
+    "lastRun": "2025-09-06T20:09:45.598Z",
+    "reportPath": "/reports/report-2fb43293-0cf3-491a-b70c-755fe31af780.html",
+    "pdfPath": "/reports/report-2fb43293-0cf3-491a-b70c-755fe31af780.pdf"
   },
   "reportRuns": [
     {
-      "id": "76df898b-5a48-41fa-9793-fb9729ea90e4",
-      "configId": "c84182d7-0f05-48ac-8744-fe0f9ebe82ba",
-      "timestamp": "2025-09-06T19:58:47.583Z",
+      "id": "58864ae3-8551-4747-a241-af60c2cffe8f",
+      "configId": "1159d95f-8dd6-4110-b5d2-17d90928b8c3",
+      "timestamp": "2025-09-06T20:09:06.796Z",
+      "status": "error",
+      "error": "No data available for meta adset level with last30 date range. Try 'campaign' level or 'last30' date range for better data availability."
+    },
+    {
+      "id": "2fb43293-0cf3-491a-b70c-755fe31af780",
+      "configId": "9c6623bf-5496-4ccb-aedb-aefff5254b94",
+      "timestamp": "2025-09-06T20:09:21.578Z",
       "status": "success",
-      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-76df898b-5a48-41fa-9793-fb9729ea90e4.html",
-      "reportUrl": "/reports/report-76df898b-5a48-41fa-9793-fb9729ea90e4.html",
-      "pdfUrl": "/reports/report-76df898b-5a48-41fa-9793-fb9729ea90e4.pdf"
+      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-2fb43293-0cf3-491a-b70c-755fe31af780.html",
+      "reportUrl": "/reports/report-2fb43293-0cf3-491a-b70c-755fe31af780.html",
+      "pdfUrl": "/reports/report-2fb43293-0cf3-491a-b70c-755fe31af780.pdf"
     }
   ]
 }

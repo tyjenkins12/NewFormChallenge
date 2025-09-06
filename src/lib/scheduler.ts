@@ -79,15 +79,15 @@ class ReportScheduler {
           reportRuns: this.reportRuns
         };
         await fs.writeFile(this.configFilePath, JSON.stringify(dataToSave, null, 2));
-        console.log('💾 Scheduler: Config and status saved to file');
+        console.log('Scheduler: Config and status saved to file');
       } catch (error) {
-        console.error('❌ Scheduler: Failed to save config:', error);
+        console.error('Scheduler: Failed to save config:', error);
       }
     }
   }
 
   private async initializeScheduler(): Promise<void> {
-    console.log('🏁 initializeScheduler called');
+    console.log('initializeScheduler called');
     
     // Clear any existing timeout to prevent duplicates
     if (this.scheduledTimeoutId) {
@@ -107,14 +107,14 @@ class ReportScheduler {
     // Try to load existing config first
     await this.loadConfig();
     
-    console.log('🔍 After loadConfig, config is:', this.config?.cadence, this.config?.platform);
+    console.log('After loadConfig, config is:', this.config?.cadence, this.config?.platform);
     
     // If we have a config, restore the scheduled task
     if (this.config && this.config.cadence !== 'manual') {
-      console.log(`🔄 Scheduler: Restoring ${this.config.cadence} schedule for ${this.config.platform}`);
+      console.log(`Scheduler: Restoring ${this.config.cadence} schedule for ${this.config.platform}`);
       await this.scheduleNextRunFromNow();
     } else {
-      console.log('📋 Scheduler: No existing configuration to restore or manual cadence');
+      console.log('Scheduler: No existing configuration to restore or manual cadence');
     }
   }
 
@@ -158,14 +158,14 @@ class ReportScheduler {
       this.currentTask = null;
     }
     
-    console.log('✅ Scheduler: Clean startup - all configuration and reports cleared');
+    console.log('Scheduler: Clean startup - all configuration and reports cleared');
   }
 
   async scheduleReport(config: ReportConfig): Promise<void> {
-    console.log('📝 Scheduler: Received config:', JSON.stringify(config, null, 2));
+    console.log('Scheduler: Received config:', JSON.stringify(config, null, 2));
     this.config = { ...config, id: config.id || uuidv4() };
-    console.log('✅ Scheduler: Config stored with ID:', this.config.id);
-    console.log('🔍 Config cadence after setting:', this.config.cadence);
+    console.log('Scheduler: Config stored with ID:', this.config.id);
+    console.log('Config cadence after setting:', this.config.cadence);
     
     // Save config to file for persistence across API calls
     await this.saveConfig();
@@ -176,22 +176,22 @@ class ReportScheduler {
       this.currentTask = null;
     }
 
-    console.log('🔍 About to check cadence, current config:', this.config?.cadence);
+    console.log('About to check cadence, current config:', this.config?.cadence);
     
     // Only schedule if not manual
     if (config.cadence !== 'manual') {
-      console.log('🔍 Calling scheduleNextRunFromNow, config before call:', this.config?.cadence);
+      console.log('Calling scheduleNextRunFromNow, config before call:', this.config?.cadence);
       // Instead of fixed cron expressions, schedule first run based on current time
       // Pass config directly to avoid any race conditions
       await this.scheduleNextRunFromNow(config);
     } else {
-      console.log('📋 Scheduler: Manual mode - generating immediate report');
+      console.log('Scheduler: Manual mode - generating immediate report');
       // For manual mode, generate a report immediately
       try {
         const report = await this.runReport();
-        console.log('✅ Manual report generated successfully:', report.id);
+        console.log('Manual report generated successfully:', report.id);
       } catch (error) {
-        console.error('❌ Failed to generate manual report:', error);
+        console.error('Failed to generate manual report:', error);
       }
     }
 
@@ -351,7 +351,7 @@ class ReportScheduler {
   }
 
   async runReport(): Promise<ReportRun> {
-    console.log('🚀 Scheduler: Running report...');
+    console.log('Scheduler: Running report...');
     
     // Prevent multiple reports from running simultaneously using file-based lock
     try {
@@ -369,7 +369,7 @@ class ReportScheduler {
     // Create lock file
     await fs.writeFile(this.lockFilePath, `${Date.now()}-${process.pid}`);
     this.isGeneratingReport = true;
-    console.log('🔒 Report generation lock acquired (file created)');
+    console.log('Report generation lock acquired (file created)');
     
     // Preserve the previous report path during generation
     const previousReportPath = this.status.reportPath;
@@ -380,13 +380,13 @@ class ReportScheduler {
       await this.loadConfig();
     }
     
-    console.log('📋 Scheduler: Current config exists?', !!this.config);
+    console.log('Scheduler: Current config exists?', !!this.config);
     if (this.config) {
-      console.log('📄 Scheduler: Config details:', { platform: this.config.platform, cadence: this.config.cadence });
+      console.log('Scheduler: Config details:', { platform: this.config.platform, cadence: this.config.cadence });
     }
     
     if (!this.config) {
-      console.error('❌ Scheduler: No configuration found!');
+      console.error('Scheduler: No configuration found!');
       throw new Error('No report configuration found');
     }
 
@@ -410,12 +410,12 @@ class ReportScheduler {
     try {
       // Fetch data from API
       const data = await fetchAdData(this.config);
-      console.log(`📊 Scheduler: Retrieved ${data.length} records from NewForm API`);
+      console.log(`Scheduler: Retrieved ${data.length} records from NewForm API`);
       
       // Check if we have insufficient data - skip report generation entirely
       if (data.length === 0) {
         const errorMessage = `No data available for ${this.config.platform} ${this.config.level} level with ${this.config.dateRangeEnum} date range. Try 'campaign' level or 'last30' date range for better data availability.`;
-        console.log(`⚠️ Scheduler: ${errorMessage}`);
+        console.log(`Scheduler: ${errorMessage}`);
         this.status.lastError = errorMessage;
         run.status = 'error';
         run.error = errorMessage;
@@ -434,7 +434,7 @@ class ReportScheduler {
       
       // Clear any previous error since we have data now
       this.status.lastError = undefined;
-      console.log('✅ Scheduler: Have data, proceeding with report generation');
+      console.log('Scheduler: Have data, proceeding with report generation');
       
       // Generate LLM summary
       const summary = await generateLLMSummary(data, this.config);
@@ -484,7 +484,7 @@ class ReportScheduler {
         console.log('🔐 Generated signed HTML URL for secure access');
       }
       
-      console.log('✅ Scheduler: Generated report with real data');
+      console.log('Scheduler: Generated report with real data');
 
       // Generate PDF if needed (for email attachment or link download)
       let pdfAttachment;
@@ -511,7 +511,7 @@ class ReportScheduler {
             console.log('🔐 Generated signed PDF URL for secure access');
           }
           
-          console.log('✅ PDF attachment created and saved for download:', pdfUrl);
+          console.log('PDF attachment created and saved for download:', pdfUrl);
         } else if (this.config.delivery === 'link') {
           console.log('📄 Generating PDF for download...');
           console.log('📊 Link PDF HTML length:', reportHtml.length, 'chars');

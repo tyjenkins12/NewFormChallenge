@@ -7,7 +7,7 @@ export async function GET() {
     const status = scheduler.getStatus();
     const config = scheduler.getConfig();
     
-    console.log('📊 Status API returning:', {
+    console.log('Status API returning:', {
       nextRun: status.nextRun,
       isRunning: status.isRunning,
       configCadence: config?.cadence,
