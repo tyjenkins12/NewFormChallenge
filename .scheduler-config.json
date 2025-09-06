@@ -1,22 +1,27 @@
 {
-  "platform": "meta",
-  "metrics": [
-    "clicks",
-    "conversions",
-    "impressions",
-    "ctr",
-    "spend"
-  ],
-  "level": "adset",
-  "breakdowns": [
-    "age"
-  ],
-  "dimensions": [],
-  "dateRangeEnum": "last30",
-  "cadence": "manual",
-  "delivery": "email",
-  "email": "tyjen1218@gmail.com",
-  "timeIncrement": "7",
-  "reportType": "BASIC",
-  "id": "1685df3f-2d36-4cdf-a0d9-d85d04223dc1"
+  "config": {
+    "platform": "meta",
+    "metrics": [
+      "spend",
+      "clicks",
+      "frequency"
+    ],
+    "level": "account",
+    "breakdowns": [
+      "age"
+    ],
+    "dimensions": [],
+    "dateRangeEnum": "last30",
+    "cadence": "hourly",
+    "delivery": "email",
+    "email": "tyjen1218@gmail.com",
+    "timeIncrement": "7",
+    "reportType": "BASIC",
+    "id": "d9c79a41-e272-4adf-93e6-62462faeeefe"
+  },
+  "status": {
+    "isRunning": true,
+    "nextRun": "2025-09-06T03:43:23.691Z"
+  },
+  "reportRuns": []
 }

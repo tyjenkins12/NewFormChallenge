@@ -79,23 +79,57 @@ export default function Configure() {
 
   const [isValid, setIsValid] = useState(false);
 
-  // Load saved configuration on component mount
+  // Load or initialize configuration on component mount
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    try {
-      const stored = localStorage.getItem('reportConfig');
-      if (stored) {
-        const savedData = JSON.parse(stored);
-        if (savedData.config) {
-          setConfig(savedData.config);
+    
+    const initializeConfiguration = async () => {
+      // Check if this is a fresh server session
+      const sessionId = sessionStorage.getItem('serverSessionId');
+      const newSessionId = Date.now().toString();
+      
+      if (!sessionId) {
+        // New session - clear everything once
+        console.log('🧹 New server session detected - clearing all configuration');
+        localStorage.removeItem('reportConfig');
+        sessionStorage.setItem('serverSessionId', newSessionId);
+        
+        // Clear server-side configuration
+        try {
+          await fetch('/api/scheduler/clear', {
+            method: 'POST',
+          });
+          console.log('🗂️ Server configuration cleared for new session');
+        } catch (error) {
+          console.error('Failed to clear server configuration:', error);
         }
-        if (savedData.demoMode) {
-          setDemoMode(savedData.demoMode);
-        }
+        
+        console.log('✅ Fresh session initialized');
+      } else {
+        console.log('📂 Existing session - loading saved configuration');
       }
-    } catch (error) {
-      console.error('Error loading saved configuration:', error);
-    }
+      
+      // Load existing configuration if available
+      try {
+        const stored = localStorage.getItem('reportConfig');
+        if (stored) {
+          const savedData = JSON.parse(stored);
+          if (savedData.config) {
+            setConfig(savedData.config);
+            console.log('✅ Loaded saved configuration');
+          }
+          if (savedData.demoMode) {
+            setDemoMode(savedData.demoMode);
+          }
+        } else {
+          console.log('📋 No saved configuration found');
+        }
+      } catch (error) {
+        console.error('Error loading saved configuration:', error);
+      }
+    };
+    
+    initializeConfiguration();
   }, []);
 
   const handleSave = () => {

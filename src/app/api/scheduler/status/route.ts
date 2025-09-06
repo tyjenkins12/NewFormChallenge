@@ -3,12 +3,20 @@ import ReportScheduler from '@/lib/scheduler';
 
 export async function GET() {
   try {
-    const scheduler = ReportScheduler.getInstance();
+    const scheduler = await ReportScheduler.getInstanceAsync();
+    const status = scheduler.getStatus();
+    const config = scheduler.getConfig();
+    
+    console.log('📊 Status API returning:', {
+      nextRun: status.nextRun,
+      isRunning: status.isRunning,
+      configCadence: config?.cadence
+    });
     
     return NextResponse.json({
-      status: scheduler.getStatus(),
+      status: status,
       runs: scheduler.getReportRuns(),
-      config: scheduler.getConfig()
+      config: config
     });
   } catch (error) {
     console.error('Failed to get scheduler status:', error);

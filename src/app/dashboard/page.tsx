@@ -55,6 +55,11 @@ const Dashboard = () => {
       const response = await fetch('/api/scheduler/status');
       if (response.ok) {
         const status = await response.json();
+        console.log('🔍 Dashboard received status:', {
+          nextRun: status.status?.nextRun,
+          isRunning: status.status?.isRunning,
+          configCadence: status.config?.cadence
+        });
         setSchedulerStatus(status);
         
         // Simulate last run data based on scheduler status
@@ -116,8 +121,37 @@ const Dashboard = () => {
       reportConfig?.cadence === 'manual' ? 'Manual trigger only' : 'Not scheduled',
     countdown: schedulerStatus?.status?.nextRun ? 
       getCountdown(schedulerStatus.status.nextRun) : 
-      reportConfig?.cadence === 'manual' ? 'Manual' : 'N/A'
+      reportConfig?.cadence === 'manual' ? 'Manual' : 'N/A',
+    progress: getScheduleProgress()
   };
+
+  // Debug logging for nextRun
+  console.log('🔍 Dashboard nextRun calculation:', {
+    hasNextRun: !!schedulerStatus?.status?.nextRun,
+    nextRunValue: schedulerStatus?.status?.nextRun,
+    scheduled: nextRun.scheduled,
+    countdown: nextRun.countdown,
+    cadence: reportConfig?.cadence
+  });
+
+  // Helper function to calculate schedule progress
+  function getScheduleProgress() {
+    if (!schedulerStatus?.status?.nextRun || !schedulerStatus?.status?.lastRun || reportConfig?.cadence === 'manual') {
+      return 0;
+    }
+
+    const now = new Date();
+    const lastRun = new Date(schedulerStatus.status.lastRun);
+    const nextRun = new Date(schedulerStatus.status.nextRun);
+    
+    const totalInterval = nextRun.getTime() - lastRun.getTime();
+    const elapsed = now.getTime() - lastRun.getTime();
+    
+    if (totalInterval <= 0) return 0;
+    
+    const progress = Math.min(Math.max((elapsed / totalInterval) * 100, 0), 100);
+    return Math.round(progress);
+  }
 
   // Helper function to calculate countdown
   function getCountdown(nextRunTime: string) {
@@ -309,13 +343,15 @@ const Dashboard = () => {
                   <span className="text-sm text-muted-foreground">Countdown</span>
                   <span className="text-sm font-medium text-accent">{nextRun.countdown}</span>
                 </div>
-                <div className="pt-2">
-                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                    <span>Progress</span>
-                    <span>15%</span>
+                {reportConfig?.cadence !== 'manual' && reportConfig?.cadence && (
+                  <div className="pt-2">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                      <span>Progress</span>
+                      <span>{nextRun.progress}%</span>
+                    </div>
+                    <Progress value={nextRun.progress} className="h-2" />
                   </div>
-                  <Progress value={15} className="h-2" />
-                </div>
+                )}
               </CardContent>
             </Card>
 
