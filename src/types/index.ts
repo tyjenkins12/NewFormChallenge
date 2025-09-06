@@ -6,7 +6,8 @@ export interface ReportConfig {
   breakdowns?: string[]; // For Meta
   dimensions?: string[]; // For TikTok
   dateRangeEnum: 'last7' | 'last14' | 'last30' | 'lifetime';
-  cadence: 'manual' | 'hourly' | '12hours' | 'daily';
+  cadence: 'manual' | 'hourly' | '12hours' | 'daily' | 'weekly' | 'monthly' | 'custom';
+  cronExpression?: string; // For custom cadence
   delivery: 'email' | 'link';
   email?: string;
   pdfAttachment?: boolean;
@@ -87,5 +88,18 @@ export const CADENCES = [
   { value: 'manual', label: 'Manual' },
   { value: 'hourly', label: 'Hourly' },
   { value: '12hours', label: 'Every 12 hours' },
-  { value: 'daily', label: 'Daily' }
+  { value: 'daily', label: 'Daily' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'custom', label: 'Custom (Cron Expression)' }
+];
+
+// Preset cron expressions for common scheduling patterns
+export const CRON_PRESETS = [
+  { label: 'Every Monday at 9 AM', expression: '0 9 * * 1', description: 'Weekly on Monday' },
+  { label: 'Every Friday at 5 PM', expression: '0 17 * * 5', description: 'Weekly on Friday' },
+  { label: 'First day of month at 8 AM', expression: '0 8 1 * *', description: 'Monthly' },
+  { label: 'Every weekday at 10 AM', expression: '0 10 * * 1-5', description: 'Monday to Friday' },
+  { label: 'Every 6 hours', expression: '0 */6 * * *', description: 'Every 6 hours' },
+  { label: 'Twice daily (9 AM & 6 PM)', expression: '0 9,18 * * *', description: '9 AM and 6 PM daily' }
 ];

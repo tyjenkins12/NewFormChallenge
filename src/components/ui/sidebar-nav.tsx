@@ -22,7 +22,7 @@ export function SidebarNav() {
   const pathname = usePathname();
 
   return (
-    <div className="flex h-screen w-64 flex-col bg-gradient-card border-r border-border shadow-card">
+    <div className="flex min-h-screen w-64 flex-col bg-gradient-card border-r border-border shadow-card">
       <div className="flex h-16 items-center px-6">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-theme">

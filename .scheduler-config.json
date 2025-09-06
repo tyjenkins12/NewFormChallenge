@@ -3,21 +3,23 @@
     "platform": "meta",
     "metrics": [
       "spend",
-      "clicks",
-      "impressions"
+      "impressions",
+      "clicks"
     ],
-    "level": "adset",
+    "level": "account",
     "breakdowns": [
-      "age"
+      "age",
+      "gender"
     ],
     "dimensions": [],
     "dateRangeEnum": "last30",
     "cadence": "manual",
-    "delivery": "email",
-    "email": "tyjen1218@gmail.com",
+    "cronExpression": "",
+    "delivery": "link",
+    "email": "",
     "timeIncrement": "7",
     "reportType": "BASIC",
-    "pdfAttachment": true,
+    "pdfAttachment": false,
     "tokenSettings": {
       "enabled": false,
       "expirationHours": 168,
@@ -27,23 +29,23 @@
       "enabled": false,
       "accelerated": false
     },
-    "id": "2370c6bd-fcd0-4e26-8904-2efce1f6ad66"
+    "id": "241f9a69-b9d0-460e-af88-89ae67b3f9cb"
   },
   "status": {
     "isRunning": false,
-    "lastRun": "2025-09-06T18:35:43.847Z",
-    "reportPath": "/reports/report-887cd5cc-1a27-4460-b484-f596dfe74d23.html",
-    "pdfPath": "/reports/report-887cd5cc-1a27-4460-b484-f596dfe74d23.pdf"
+    "lastRun": "2025-09-06T19:09:19.938Z",
+    "reportPath": "/reports/report-6ea2c276-2963-46c2-a727-845fdb984220.html",
+    "pdfPath": "/reports/report-6ea2c276-2963-46c2-a727-845fdb984220.pdf"
   },
   "reportRuns": [
     {
-      "id": "887cd5cc-1a27-4460-b484-f596dfe74d23",
-      "configId": "2370c6bd-fcd0-4e26-8904-2efce1f6ad66",
-      "timestamp": "2025-09-06T18:35:20.187Z",
+      "id": "6ea2c276-2963-46c2-a727-845fdb984220",
+      "configId": "241f9a69-b9d0-460e-af88-89ae67b3f9cb",
+      "timestamp": "2025-09-06T19:09:06.998Z",
       "status": "success",
-      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-887cd5cc-1a27-4460-b484-f596dfe74d23.html",
-      "reportUrl": "/reports/report-887cd5cc-1a27-4460-b484-f596dfe74d23.html",
-      "pdfUrl": "/reports/report-887cd5cc-1a27-4460-b484-f596dfe74d23.pdf"
+      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-6ea2c276-2963-46c2-a727-845fdb984220.html",
+      "reportUrl": "/reports/report-6ea2c276-2963-46c2-a727-845fdb984220.html",
+      "pdfUrl": "/reports/report-6ea2c276-2963-46c2-a727-845fdb984220.pdf"
     }
   ]
 }

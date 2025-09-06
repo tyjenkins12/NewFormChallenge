@@ -1,4 +1,5 @@
 import * as cron from 'node-cron';
+import * as cronParser from 'cron-parser';
 import { ReportConfig, ReportRun, SchedulerStatus } from '@/types';
 import { fetchAdData, generateLLMSummary } from './api';
 import { generateReport, generateEmailReport } from './report-generator';
@@ -6,6 +7,7 @@ import { sendEmail } from './email';
 import { savePdfReport, createEmailAttachment } from './pdf-generator';
 import { reportAuthTokens } from './auth-tokens';
 import { getBaseUrl } from './utils/base-url';
+import { getCronExpressionForCadence, getNextCronExecution, getTimeUntilNextCron } from './utils/cron-utils';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs/promises';
 import path from 'path';
@@ -207,47 +209,44 @@ class ReportScheduler {
       return;
     }
 
-    const now = new Date();
-    const nextRun = new Date(now);
-    
+    let nextRun: Date;
+    let cronExpression: string | null = null;
+
     // Check if demo mode accelerated scheduling is enabled
     const isAccelerated = config.demoMode?.enabled && config.demoMode?.accelerated;
     
-    // Calculate next run time based on current time + interval
-    if (isAccelerated) {
-      // Accelerated demo mode: hourly = 1min, 12hours = 1.5min, daily = 2min
-      switch (config.cadence) {
-        case 'hourly':
-          nextRun.setMinutes(nextRun.getMinutes() + 1);
-          break;
-        case '12hours':
-          nextRun.setMinutes(nextRun.getMinutes() + 1);
-          nextRun.setSeconds(nextRun.getSeconds() + 30);
-          break;
-        case 'daily':
-          nextRun.setMinutes(nextRun.getMinutes() + 2);
-          break;
-      }
-      console.log('⚡ Demo mode accelerated schedule enabled');
+    if (config.cadence === 'custom' && config.cronExpression) {
+      // Use custom cron expression
+      cronExpression = config.cronExpression;
+      console.log('🕐 Using custom cron expression:', cronExpression);
     } else {
-      // Normal scheduling
-      switch (config.cadence) {
-        case 'hourly':
-          nextRun.setHours(nextRun.getHours() + 1);
-          break;
-        case '12hours':
-          nextRun.setHours(nextRun.getHours() + 12);
-          break;
-        case 'daily':
-          nextRun.setDate(nextRun.getDate() + 1);
-          // Keep the same time as when user configured it
-          break;
+      // Get cron expression for built-in cadence or use legacy logic for demo mode
+      cronExpression = getCronExpressionForCadence(config.cadence);
+      console.log('🕐 Using built-in cron expression for', config.cadence, ':', cronExpression);
+    }
+
+    if (cronExpression && !isAccelerated) {
+      // Use cron-parser for precise scheduling
+      const nextExecution = getNextCronExecution(cronExpression);
+      if (nextExecution) {
+        nextRun = nextExecution;
+        console.log('📅 Cron-based scheduling:', nextRun.toLocaleString());
+      } else {
+        console.error('❌ Failed to parse cron expression, falling back to legacy logic');
+        nextRun = this.calculateLegacyNextRun(config);
+      }
+    } else {
+      // Use legacy logic for demo mode or fallback
+      nextRun = this.calculateLegacyNextRun(config, isAccelerated);
+      if (isAccelerated) {
+        console.log('⚡ Demo mode accelerated schedule enabled');
       }
     }
     
     this.status.nextRun = nextRun;
     
     // Schedule a one-time timeout for the next run
+    const now = new Date();
     const msUntilNext = nextRun.getTime() - now.getTime();
     
     const timeUnit = isAccelerated ? 'seconds' : 'minutes';
@@ -288,6 +287,54 @@ class ReportScheduler {
     
     // Save the updated status to file
     await this.saveConfig();
+  }
+
+  private calculateLegacyNextRun(config: ReportConfig, isAccelerated: boolean = false): Date {
+    const now = new Date();
+    const nextRun = new Date(now);
+    
+    if (isAccelerated) {
+      // Accelerated demo mode: hourly = 1min, 12hours = 1.5min, daily = 2min, weekly = 3min, monthly = 4min
+      switch (config.cadence) {
+        case 'hourly':
+          nextRun.setMinutes(nextRun.getMinutes() + 1);
+          break;
+        case '12hours':
+          nextRun.setMinutes(nextRun.getMinutes() + 1);
+          nextRun.setSeconds(nextRun.getSeconds() + 30);
+          break;
+        case 'daily':
+          nextRun.setMinutes(nextRun.getMinutes() + 2);
+          break;
+        case 'weekly':
+          nextRun.setMinutes(nextRun.getMinutes() + 3);
+          break;
+        case 'monthly':
+          nextRun.setMinutes(nextRun.getMinutes() + 4);
+          break;
+      }
+    } else {
+      // Normal scheduling
+      switch (config.cadence) {
+        case 'hourly':
+          nextRun.setHours(nextRun.getHours() + 1);
+          break;
+        case '12hours':
+          nextRun.setHours(nextRun.getHours() + 12);
+          break;
+        case 'daily':
+          nextRun.setDate(nextRun.getDate() + 1);
+          break;
+        case 'weekly':
+          nextRun.setDate(nextRun.getDate() + 7);
+          break;
+        case 'monthly':
+          nextRun.setMonth(nextRun.getMonth() + 1);
+          break;
+      }
+    }
+    
+    return nextRun;
   }
 
   private getCronExpression(cadence: string): string {
@@ -559,6 +606,19 @@ class ReportScheduler {
     }
 
     const lastRun = new Date(this.status.lastRun);
+    
+    // For custom cron expressions, use cron-parser
+    if (this.config.cadence === 'custom' && this.config.cronExpression) {
+      const nextExecution = getNextCronExecution(this.config.cronExpression);
+      if (nextExecution) {
+        this.status.nextRun = nextExecution;
+        console.log(`⏰ Next custom cron run scheduled for: ${nextExecution.toLocaleString()}`);
+        console.log(`📊 Based on cron expression: ${this.config.cronExpression}`);
+        return;
+      }
+    }
+
+    // Legacy calculation for built-in cadences
     const nextRun = new Date(lastRun);
     
     switch (this.config.cadence) {
@@ -570,7 +630,12 @@ class ReportScheduler {
         break;
       case 'daily':
         nextRun.setDate(nextRun.getDate() + 1);
-        // For daily, keep the same time as the manual run instead of fixed 9 AM
+        break;
+      case 'weekly':
+        nextRun.setDate(nextRun.getDate() + 7);
+        break;
+      case 'monthly':
+        nextRun.setMonth(nextRun.getMonth() + 1);
         break;
     }
     

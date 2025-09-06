@@ -5,7 +5,6 @@ import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { 
   BarChart3, 
   Play, 
@@ -18,7 +17,10 @@ import {
   AlertTriangle,
   Timer,
   Calendar,
-  Download
+  Download,
+  RefreshCw,
+  Lock,
+  Unlock
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
@@ -414,7 +416,8 @@ const Dashboard = () => {
                 }}
                 size="sm"
               >
-                🔄 Refresh
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
               </Button>
               <Button 
                 onClick={handleRunNow} 
@@ -640,8 +643,9 @@ const Dashboard = () => {
                         if (tokenSettings?.enabled) {
                           return (
                             <>
-                              <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 border-green-200">
-                                🔒 Secure tokens
+                              <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 border-green-200 flex items-center gap-1">
+                                <Lock className="h-3 w-3" />
+                                Secure tokens
                               </Badge>
                               <span className="text-xs text-muted-foreground">
                                 ({tokenSettings.expirationHours}h expiry)
@@ -650,15 +654,17 @@ const Dashboard = () => {
                           );
                         } else {
                           return (
-                            <Badge variant="outline" className="text-xs">
-                              🔓 Public access
+                            <Badge variant="outline" className="text-xs flex items-center gap-1">
+                              <Unlock className="h-3 w-3" />
+                              Public access
                             </Badge>
                           );
                         }
                       } catch {
                         return (
-                          <Badge variant="outline" className="text-xs">
-                            🔓 Public access
+                          <Badge variant="outline" className="text-xs flex items-center gap-1">
+                            <Unlock className="h-3 w-3" />
+                            Public access
                           </Badge>
                         );
                       }

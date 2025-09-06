@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
-import { Play, Save, Eye, Settings, Loader2 } from "lucide-react";
+import { Play, Save, Eye, Settings, Loader2, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import TokenSettings from "@/components/TokenSettings";
@@ -89,8 +89,10 @@ import {
   TIKTOK_DIMENSIONS, 
   TIKTOK_LEVELS,
   DATE_RANGES,
-  CADENCES
+  CADENCES,
+  CRON_PRESETS
 } from '@/types';
+import { validateCronExpression, describeCronExpression } from '@/lib/utils/cron-utils';
 
 const metaMetrics = META_METRICS.map(metric => ({ 
   id: metric, 
@@ -111,6 +113,7 @@ export default function Configure() {
     level: "",
     dateRangeEnum: "", // Changed from dateRange
     cadence: "",
+    cronExpression: "", // Always initialize as empty string, never undefined
     delivery: "",
     email: "",
     pdfAttachment: false,
@@ -170,7 +173,12 @@ export default function Configure() {
         if (stored) {
           const savedData = JSON.parse(stored);
           if (savedData.config) {
-            setConfig(savedData.config);
+            // Ensure cronExpression is always a string to avoid controlled/uncontrolled input issues
+            const configWithDefaults = {
+              ...savedData.config,
+              cronExpression: savedData.config.cronExpression || ""
+            };
+            setConfig(configWithDefaults);
             console.log('✅ Loaded saved configuration');
           }
           if (savedData.demoMode) {
@@ -239,6 +247,7 @@ export default function Configure() {
           dimensions: config.dimensions,
           dateRangeEnum: config.dateRangeEnum,
           cadence: config.cadence,
+          cronExpression: config.cronExpression,
           delivery: config.delivery,
           email: config.email,
           timeIncrement: config.timeIncrement,
@@ -313,7 +322,9 @@ export default function Configure() {
   const validateConfig = useCallback(() => {
     const required = config.platform && config.metrics.length > 0 && config.level && config.dateRangeEnum && config.cadence && config.delivery;
     const emailValid = config.delivery !== "email" || config.email;
-    const isConfigValid = !!(required && emailValid);
+    const cronExpression = config.cronExpression || "";
+    const cronValid = config.cadence !== "custom" || (cronExpression && validateCronExpression(cronExpression).isValid);
+    const isConfigValid = !!(required && emailValid && cronValid);
     setIsValid(isConfigValid);
   }, [config]);
 
@@ -492,7 +503,7 @@ export default function Configure() {
               {/* Cadence */}
               <div className="space-y-2">
                 <Label htmlFor="cadence">Cadence *</Label>
-                <Select value={config.cadence} onValueChange={(value) => setConfig(prev => ({ ...prev, cadence: value }))}>
+                <Select value={config.cadence} onValueChange={(value) => setConfig(prev => ({ ...prev, cadence: value, cronExpression: value !== 'custom' ? '' : prev.cronExpression }))}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select report frequency" />
                   </SelectTrigger>
@@ -505,6 +516,80 @@ export default function Configure() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Custom Cron Expression */}
+              {config.cadence === 'custom' && (
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="cronExpression">Cron Expression *</Label>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Use standard cron format: minute hour day month day-of-week
+                    </p>
+                  </div>
+                  
+                  <Input
+                    id="cronExpression"
+                    value={config.cronExpression || ""} // Ensure always a string
+                    onChange={(e) => setConfig(prev => ({ ...prev, cronExpression: e.target.value }))}
+                    placeholder="0 9 * * 1 (Every Monday at 9 AM)"
+                    className={(() => {
+                      const expression = config.cronExpression || "";
+                      if (!expression) return '';
+                      const validation = validateCronExpression(expression);
+                      return validation.isValid ? 'border-green-500' : 'border-red-500';
+                    })()}
+                  />
+                  
+                  {config.cronExpression && (() => {
+                    const expression = config.cronExpression || "";
+                    const validation = validateCronExpression(expression);
+                    if (validation.isValid) {
+                      return (
+                        <div className="space-y-2">
+                          <p className="text-sm text-green-600 flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4" />
+                            {describeCronExpression(expression)}
+                          </p>
+                          {validation.nextRunDates && validation.nextRunDates.length > 0 && (
+                            <div className="text-xs text-muted-foreground">
+                              <p>Next runs:</p>
+                              <ul className="list-disc list-inside ml-2">
+                                {validation.nextRunDates.slice(0, 3).map((date, i) => (
+                                  <li key={i}>{date.toLocaleString()}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <p className="text-sm text-red-600">
+                          ❌ {validation.error}
+                        </p>
+                      );
+                    }
+                  })()}
+
+                  {/* Cron Presets */}
+                  <div className="space-y-2">
+                    <Label>Quick Presets</Label>
+                    <div className="grid grid-cols-1 gap-2">
+                      {CRON_PRESETS.map((preset, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          className="text-left p-2 text-sm rounded border hover:bg-accent transition-colors"
+                          onClick={() => setConfig(prev => ({ ...prev, cronExpression: preset.expression }))}
+                        >
+                          <div className="font-medium">{preset.label}</div>
+                          <div className="text-xs text-muted-foreground">{preset.expression} - {preset.description}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Delivery Method */}
               <div className="space-y-2">
