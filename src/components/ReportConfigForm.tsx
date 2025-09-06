@@ -10,6 +10,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import TokenSettings from './TokenSettings';
 import { 
   ReportConfig, 
   TIKTOK_METRICS, 
@@ -32,6 +34,12 @@ const formSchema = z.object({
   cadence: z.enum(['manual', 'hourly', '12hours', 'daily']),
   delivery: z.enum(['email', 'link']),
   email: z.string().email().optional(),
+  pdfAttachment: z.boolean().optional(),
+  tokenSettings: z.object({
+    enabled: z.boolean(),
+    expirationHours: z.number().optional(),
+    allowRefresh: z.boolean().optional(),
+  }).optional(),
 }).refine((data) => {
   if (data.delivery === 'email') {
     return data.email && data.email.length > 0;
@@ -54,6 +62,11 @@ export default function ReportConfigForm({ onSubmit, loading }: Props) {
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>([]);
   const [selectedBreakdowns, setSelectedBreakdowns] = useState<string[]>([]);
   const [selectedDimensions, setSelectedDimensions] = useState<string[]>([]);
+  const [tokenSettings, setTokenSettings] = useState({
+    enabled: false,
+    expirationHours: 168,
+    allowRefresh: true
+  });
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -67,6 +80,12 @@ export default function ReportConfigForm({ onSubmit, loading }: Props) {
       cadence: 'daily',
       delivery: 'link',
       email: '',
+      pdfAttachment: false,
+      tokenSettings: {
+        enabled: false,
+        expirationHours: 168,
+        allowRefresh: true
+      },
     },
   });
 
@@ -79,6 +98,8 @@ export default function ReportConfigForm({ onSubmit, loading }: Props) {
       cadence: data.cadence,
       delivery: data.delivery,
       email: data.email,
+      pdfAttachment: data.pdfAttachment,
+      tokenSettings: data.tokenSettings,
     };
 
     if (data.platform === 'meta' && data.breakdowns) {
@@ -335,20 +356,55 @@ export default function ReportConfigForm({ onSubmit, loading }: Props) {
 
             {/* Email (conditional) */}
             {form.watch('delivery') === 'email' && (
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email Address</FormLabel>
-                    <FormControl>
-                      <Input placeholder="your@email.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <>
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email Address</FormLabel>
+                      <FormControl>
+                        <Input placeholder="your@email.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* PDF Attachment */}
+                <FormField
+                  control={form.control}
+                  name="pdfAttachment"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <FormLabel>Include PDF Attachment</FormLabel>
+                          <p className="text-sm text-muted-foreground">
+                            Attach a PDF version of the report to the email
+                          </p>
+                        </div>
+                        <Switch
+                          checked={field.value || false}
+                          onCheckedChange={field.onChange}
+                        />
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
             )}
+
+            {/* Token Settings */}
+            <TokenSettings
+              settings={tokenSettings}
+              onChange={(newSettings) => {
+                setTokenSettings(newSettings);
+                form.setValue('tokenSettings', newSettings);
+              }}
+              className="mt-6"
+            />
 
             <Button type="submit" disabled={loading} className="w-full">
               {loading ? 'Setting up...' : 'Save & Start Report'}

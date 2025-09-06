@@ -16,6 +16,11 @@ export interface ReportConfig {
     enabled: boolean;
     accelerated: boolean;
   };
+  tokenSettings?: {
+    enabled: boolean;
+    expirationHours?: number;
+    allowRefresh?: boolean;
+  };
 }
 
 export interface ReportRun {
@@ -26,8 +31,10 @@ export interface ReportRun {
   error?: string;
   reportPath?: string;
   reportUrl?: string;
+  signedUrl?: string;
   pdfPath?: string;
   pdfUrl?: string;
+  signedPdfUrl?: string;
 }
 
 export interface SchedulerStatus {

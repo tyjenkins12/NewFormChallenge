@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Play, ExternalLink, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { Clock, Play, ExternalLink, AlertCircle, CheckCircle, Loader2, Shield, Key, RefreshCw } from 'lucide-react';
 import { SchedulerStatus, ReportRun, ReportConfig } from '@/types';
 
 interface Props {
@@ -207,7 +207,105 @@ export default function Dashboard({ onRunNow, onReset }: Props) {
                 <p className="text-muted-foreground">Delivery</p>
                 <p className="font-semibold">{config.delivery} {config.email ? `(${config.email})` : ''}</p>
               </div>
+              {config.tokenSettings && (
+                <>
+                  <div>
+                    <p className="text-muted-foreground">Security</p>
+                    <p className="font-semibold">
+                      {config.tokenSettings.enabled ? 'Secure tokens enabled' : 'Public access'}
+                    </p>
+                  </div>
+                  {config.tokenSettings.enabled && (
+                    <div>
+                      <p className="text-muted-foreground">Token Expiration</p>
+                      <p className="font-semibold">
+                        {config.tokenSettings.expirationHours}h
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Token Management */}
+      {config && config.tokenSettings?.enabled && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Token Security Status
+            </CardTitle>
+            <CardDescription>
+              Secure access tokens are active for this report configuration
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div>
+                <p className="text-muted-foreground">Security Mode</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <Key className="h-4 w-4 text-green-500" />
+                  <span className="font-semibold text-green-700">Active</span>
+                </div>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Token Lifetime</p>
+                <p className="font-semibold">
+                  {config.tokenSettings.expirationHours} hours
+                </p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Refresh Allowed</p>
+                <p className="font-semibold">
+                  {config.tokenSettings.allowRefresh ? 'Yes' : 'No'}
+                </p>
+              </div>
+            </div>
+            
+            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-start gap-2">
+                <Shield className="h-4 w-4 text-green-600 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-green-900">
+                    Security Features Active
+                  </p>
+                  <p className="text-sm text-green-700">
+                    All report links use time-limited authentication tokens. 
+                    Email recipients get secure, expiring access links.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {lastRun && lastRun.status === 'success' && (lastRun.reportUrl || status.reportPath) && (
+              <div className="flex gap-3 mt-4">
+                <Button 
+                  variant="outline"
+                  onClick={() => window.open(lastRun.reportUrl || status.reportPath, '_blank')}
+                  className="flex items-center gap-2"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Open Secure Link
+                </Button>
+                {config.tokenSettings.allowRefresh && (
+                  <Button 
+                    variant="outline"
+                    onClick={async () => {
+                      // TODO: Implement token refresh functionality
+                      console.log('Token refresh requested');
+                    }}
+                    className="flex items-center gap-2"
+                    disabled
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    Refresh Token
+                  </Button>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
@@ -240,16 +338,35 @@ export default function Dashboard({ onRunNow, onReset }: Props) {
                       )}
                     </div>
                   </div>
-                  {run.reportUrl && run.status === 'success' && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => window.open(run.reportUrl, '_blank')}
-                      className="flex items-center gap-1"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      View
-                    </Button>
+                  {((run as any).signedUrl || run.reportUrl) && run.status === 'success' && (
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => window.open((run as any).signedUrl || run.reportUrl, '_blank')}
+                        className="flex items-center gap-1"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        View
+                      </Button>
+                      {(run as any).signedUrl && (
+                        <Badge variant="secondary" className="text-xs">
+                          <Shield className="h-2 w-2 mr-1" />
+                          Secure
+                        </Badge>
+                      )}
+                      {(run as any).signedPdfUrl && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => window.open((run as any).signedPdfUrl, '_blank')}
+                          className="flex items-center gap-1"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          PDF
+                        </Button>
+                      )}
+                    </div>
                   )}
                 </div>
               ))}

@@ -8,8 +8,7 @@
     ],
     "level": "adset",
     "breakdowns": [
-      "age",
-      "country"
+      "age"
     ],
     "dimensions": [],
     "dateRangeEnum": "last30",
@@ -19,24 +18,32 @@
     "timeIncrement": "7",
     "reportType": "BASIC",
     "pdfAttachment": true,
+    "tokenSettings": {
+      "enabled": false,
+      "expirationHours": 168,
+      "allowRefresh": true
+    },
     "demoMode": {
       "enabled": false,
       "accelerated": false
     },
-    "id": "6c9644b7-3187-4f7f-9785-719ec7e92a4c"
+    "id": "2370c6bd-fcd0-4e26-8904-2efce1f6ad66"
   },
   "status": {
     "isRunning": false,
-    "lastError": "No data available for meta adset level with last30 date range. Try 'campaign' level or 'last30' date range for better data availability.",
-    "lastRun": "2025-09-06T17:13:31.687Z"
+    "lastRun": "2025-09-06T18:35:43.847Z",
+    "reportPath": "/reports/report-887cd5cc-1a27-4460-b484-f596dfe74d23.html",
+    "pdfPath": "/reports/report-887cd5cc-1a27-4460-b484-f596dfe74d23.pdf"
   },
   "reportRuns": [
     {
-      "id": "0c09bd7e-6079-47db-af8f-0939f031c3a1",
-      "configId": "6c9644b7-3187-4f7f-9785-719ec7e92a4c",
-      "timestamp": "2025-09-06T17:13:30.753Z",
-      "status": "error",
-      "error": "No data available for meta adset level with last30 date range. Try 'campaign' level or 'last30' date range for better data availability."
+      "id": "887cd5cc-1a27-4460-b484-f596dfe74d23",
+      "configId": "2370c6bd-fcd0-4e26-8904-2efce1f6ad66",
+      "timestamp": "2025-09-06T18:35:20.187Z",
+      "status": "success",
+      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-887cd5cc-1a27-4460-b484-f596dfe74d23.html",
+      "reportUrl": "/reports/report-887cd5cc-1a27-4460-b484-f596dfe74d23.html",
+      "pdfUrl": "/reports/report-887cd5cc-1a27-4460-b484-f596dfe74d23.pdf"
     }
   ]
 }

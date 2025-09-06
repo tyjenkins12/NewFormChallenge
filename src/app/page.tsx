@@ -14,6 +14,7 @@ import { BarChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Li
 import { Play, Save, Eye, Settings, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import TokenSettings from "@/components/TokenSettings";
 
 // Mock data generator for different metrics
 const generateMockValue = (metric: string, day: number) => {
@@ -124,6 +125,12 @@ export default function Configure() {
     accelerated: false,
   });
 
+  const [tokenSettings, setTokenSettings] = useState({
+    enabled: false,
+    expirationHours: 168,
+    allowRefresh: true,
+  });
+
   const [isValid, setIsValid] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
@@ -169,6 +176,9 @@ export default function Configure() {
           if (savedData.demoMode) {
             setDemoMode(savedData.demoMode);
           }
+          if (savedData.tokenSettings) {
+            setTokenSettings(savedData.tokenSettings);
+          }
         } else {
           console.log('📋 No saved configuration found');
         }
@@ -181,8 +191,8 @@ export default function Configure() {
   }, []);
 
   const handleSave = () => {
-    console.log("Saving configuration:", config, demoMode);
-    const configData = { config, demoMode, savedAt: new Date().toISOString() };
+    console.log("Saving configuration:", config, demoMode, tokenSettings);
+    const configData = { config, demoMode, tokenSettings, savedAt: new Date().toISOString() };
     localStorage.setItem('reportConfig', JSON.stringify(configData));
     toast({
       title: "Configuration Saved",
@@ -212,7 +222,7 @@ export default function Configure() {
       }
       
       // Save to localStorage for UI persistence
-      const configData = { config, demoMode, savedAt: new Date().toISOString(), started: true };
+      const configData = { config, demoMode, tokenSettings, savedAt: new Date().toISOString(), started: true };
       localStorage.setItem('reportConfig', JSON.stringify(configData));
 
       // Send to scheduler API
@@ -234,6 +244,7 @@ export default function Configure() {
           timeIncrement: config.timeIncrement,
           reportType: config.reportType,
           pdfAttachment: config.pdfAttachment,
+          tokenSettings: tokenSettings,
           demoMode: demoMode,
         }),
       });
@@ -359,7 +370,7 @@ export default function Configure() {
               {config.platform && (
                 <div className="space-y-3">
                   <Label>Metrics *</Label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-2">
                     {getAvailableMetrics().map(metric => (
                       <div key={metric.id} className="flex items-center space-x-2">
                         <Checkbox
@@ -407,7 +418,7 @@ export default function Configure() {
               {config.platform === "meta" && (
                 <div className="space-y-3">
                   <Label>Breakdowns (optional)</Label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-2">
                     {META_BREAKDOWNS.map(breakdown => (
                       <div key={breakdown} className="flex items-center space-x-2">
                         <Checkbox
@@ -436,7 +447,7 @@ export default function Configure() {
               {config.platform === "tiktok" && (
                 <div className="space-y-3">
                   <Label>Dimensions (optional)</Label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-2">
                     {TIKTOK_DIMENSIONS.map(dimension => (
                       <div key={dimension} className="flex items-center space-x-2">
                         <Checkbox
@@ -540,6 +551,13 @@ export default function Configure() {
             </CardContent>
           </Card>
 
+          {/* Token Security Settings */}
+          <TokenSettings
+            settings={tokenSettings}
+            onChange={setTokenSettings}
+            className="shadow-card"
+          />
+
           {/* Demo Mode Toggles */}
           <Card className="shadow-card">
             <CardHeader>
@@ -601,7 +619,7 @@ export default function Configure() {
         </div>
 
         {/* Live Preview Panel */}
-        <div className="w-96 border-l border-border bg-gradient-card p-6 space-y-6">
+        <div className="w-[480px] border-l border-border bg-gradient-card p-6 space-y-6">
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10">
               <Eye className="h-4 w-4 text-accent" />
@@ -612,10 +630,9 @@ export default function Configure() {
           {config.platform && config.metrics.length > 0 ? (() => {
             // Generate dynamic mock data based on selected metrics
             const mockData = generateMockData(config.metrics);
-            const displayMetrics = config.metrics.slice(0, 4); // Show first 4 metrics in KPI cards
             
-            // Calculate totals for KPI cards
-            const totals = displayMetrics.map(metric => {
+            // Calculate totals for ALL selected metrics (no limit)
+            const totals = config.metrics.map(metric => {
               const total = mockData.reduce((sum, day) => sum + day[metric], 0);
               const display = getMetricDisplay(metric);
               return {
@@ -627,22 +644,20 @@ export default function Configure() {
 
             return (
               <div className="space-y-6">
-                {/* Dynamic KPI Cards */}
-                <div className="grid grid-cols-2 gap-3">
+                {/* Dynamic KPI Cards - Auto-fitting Grid */}
+                <div className={`grid gap-3 ${
+                  totals.length === 1 ? 'grid-cols-1' :
+                  totals.length === 2 ? 'grid-cols-2' :
+                  totals.length === 3 ? 'grid-cols-3' :
+                  totals.length === 4 ? 'grid-cols-2' :
+                  totals.length >= 5 ? 'grid-cols-3' : 'grid-cols-1'
+                }`}>
                   {totals.map(({ metric, total, display }, index) => (
                     <Card key={metric} className="p-3">
                       <div className={`text-2xl font-bold ${display.color}`}>
                         {display.format(total)}
                       </div>
                       <div className="text-xs text-muted-foreground">Total {display.label}</div>
-                    </Card>
-                  ))}
-                  
-                  {/* Fill empty slots if less than 4 metrics */}
-                  {Array.from({ length: Math.max(0, 4 - displayMetrics.length) }).map((_, index) => (
-                    <Card key={`empty-${index}`} className="p-3 opacity-50">
-                      <div className="text-2xl font-bold text-muted-foreground">--</div>
-                      <div className="text-xs text-muted-foreground">Select metric</div>
                     </Card>
                   ))}
                 </div>

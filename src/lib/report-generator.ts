@@ -8,11 +8,11 @@ export async function generateReport(data: Record<string, unknown>[], summary: s
   return generateCustomizedReport(data, summary, config, hasData);
 }
 
-export async function generateEmailReport(data: Record<string, unknown>[], summary: string, config: ReportConfig): Promise<string> {
+export async function generateEmailReport(data: Record<string, unknown>[], summary: string, config: ReportConfig, signedUrls?: { reportUrl?: string; pdfUrl?: string }): Promise<string> {
   // Handle empty data gracefully
   const hasData = data && data.length > 0;
   
-  return generateEmailOptimizedReport(data, summary, config, hasData);
+  return generateEmailOptimizedReport(data, summary, config, hasData, signedUrls);
 }
 
 function generateCustomizedReport(data: Record<string, unknown>[], summary: string, config: ReportConfig, hasData: boolean): string {
@@ -614,7 +614,7 @@ function formatValue(value: unknown): string {
   return String(value);
 }
 
-async function generateEmailOptimizedReport(data: Record<string, unknown>[], summary: string, config: ReportConfig, hasData: boolean): Promise<string> {
+async function generateEmailOptimizedReport(data: Record<string, unknown>[], summary: string, config: ReportConfig, hasData: boolean, signedUrls?: { reportUrl?: string; pdfUrl?: string }): Promise<string> {
   // Get metric display info
   const getMetricDisplay = (metric: string) => {
     const displays: Record<string, { label: string, format: (n: number) => string }> = {
@@ -817,6 +817,30 @@ async function generateEmailOptimizedReport(data: Record<string, unknown>[], sum
             <td style="padding: 0 20px 20px 20px;">
                 <h2 style="margin: 0 0 15px 0; font-size: 18px; color: #1f2937;">Detailed Data</h2>
                 ${generateEmailTable()}
+            </td>
+        </tr>
+        
+        <!-- Action Button - Always Visible -->
+        <tr>
+            <td style="padding: 20px; text-align: center;">
+                <table cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                    <tr>
+                        <td style="padding: 0;">
+                            <a href="${signedUrls?.reportUrl || '#'}" style="display: inline-block; padding: 12px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">
+                                View Full Report
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+                ${signedUrls?.reportUrl ? `
+                <p style="margin: 15px 0 0 0; font-size: 12px; color: #6b7280;">
+                    Secure link expires after configured time period
+                </p>
+                ` : `
+                <p style="margin: 15px 0 0 0; font-size: 12px; color: #6b7280;">
+                    Click to view your complete report online
+                </p>
+                `}
             </td>
         </tr>
         

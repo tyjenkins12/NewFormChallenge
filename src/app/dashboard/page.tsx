@@ -628,6 +628,44 @@ const Dashboard = () => {
                   </p>
                 </div>
                 <div>
+                  <div className="text-sm font-medium text-muted-foreground">Security</div>
+                  <div className="flex items-center gap-2 mt-1">
+                    {/* Check if tokenSettings exists in localStorage */}
+                    {(() => {
+                      try {
+                        const stored = localStorage.getItem('reportConfig');
+                        const savedData = stored ? JSON.parse(stored) : null;
+                        const tokenSettings = savedData?.tokenSettings;
+                        
+                        if (tokenSettings?.enabled) {
+                          return (
+                            <>
+                              <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 border-green-200">
+                                🔒 Secure tokens
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">
+                                ({tokenSettings.expirationHours}h expiry)
+                              </span>
+                            </>
+                          );
+                        } else {
+                          return (
+                            <Badge variant="outline" className="text-xs">
+                              🔓 Public access
+                            </Badge>
+                          );
+                        }
+                      } catch {
+                        return (
+                          <Badge variant="outline" className="text-xs">
+                            🔓 Public access
+                          </Badge>
+                        );
+                      }
+                    })()}
+                  </div>
+                </div>
+                <div>
                   <div className="text-sm font-medium text-muted-foreground">Metrics</div>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {reportConfig?.metrics?.slice(0, 2).map((metricId) => (

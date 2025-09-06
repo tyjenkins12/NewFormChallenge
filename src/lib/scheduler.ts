@@ -4,6 +4,8 @@ import { fetchAdData, generateLLMSummary } from './api';
 import { generateReport, generateEmailReport } from './report-generator';
 import { sendEmail } from './email';
 import { savePdfReport, createEmailAttachment } from './pdf-generator';
+import { reportAuthTokens } from './auth-tokens';
+import { getBaseUrl } from './utils/base-url';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs/promises';
 import path from 'path';
@@ -402,6 +404,39 @@ class ReportScheduler {
       run.status = 'success';
       run.reportPath = reportPath;
       run.reportUrl = `/reports/report-${runId}.html`;
+      
+      // Generate signed URLs if tokens are enabled (either globally or in config)
+      const tokensEnabled = this.config.tokenSettings?.enabled || reportAuthTokens.areTokensRequired();
+      if (tokensEnabled) {
+        // Apply config-specific token settings
+        if (this.config.tokenSettings) {
+          reportAuthTokens.updateConfig({
+            defaultExpirationHours: this.config.tokenSettings.expirationHours || 168,
+            allowTokenRefresh: this.config.tokenSettings.allowRefresh ?? true,
+            requireTokens: this.config.tokenSettings.enabled
+          });
+        }
+        // Get base URL using utility function
+        const baseUrl = getBaseUrl();
+        console.log('🔗 Using base URL for signed URLs:', baseUrl);
+        console.log('🔗 Environment check:', {
+          NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
+          NODE_ENV: process.env.NODE_ENV,
+          PORT: process.env.PORT
+        });
+        
+        // Generate signed HTML URL
+        const signedHtmlUrl = reportAuthTokens.generateSignedUrl({
+          reportId: runId,
+          reportType: 'html',
+          baseUrl,
+          permissions: ['read', 'download']
+        });
+        
+        run.signedUrl = signedHtmlUrl;
+        console.log('🔐 Generated signed HTML URL for secure access');
+      }
+      
       console.log('✅ Scheduler: Generated report with real data');
 
       // Generate PDF if needed (for email attachment or link download)
@@ -415,6 +450,20 @@ class ReportScheduler {
           // Also save PDF for download button
           const pdfUrl = await savePdfReport(reportHtml, runId);
           run.pdfUrl = pdfUrl;
+          
+          // Generate signed PDF URL if tokens are enabled
+          if (tokensEnabled) {
+            const baseUrl = getBaseUrl();
+            const signedPdfUrl = reportAuthTokens.generateSignedUrl({
+              reportId: runId,
+              reportType: 'pdf',
+              baseUrl,
+              permissions: ['read', 'download']
+            });
+            run.signedPdfUrl = signedPdfUrl;
+            console.log('🔐 Generated signed PDF URL for secure access');
+          }
+          
           console.log('✅ PDF attachment created and saved for download:', pdfUrl);
         } else if (this.config.delivery === 'link') {
           console.log('📄 Generating PDF for download...');
@@ -422,6 +471,20 @@ class ReportScheduler {
           console.log('📊 Link PDF HTML preview (first 200 chars):', reportHtml.substring(0, 200));
           const pdfUrl = await savePdfReport(reportHtml, runId);
           run.pdfUrl = pdfUrl;
+          
+          // Generate signed PDF URL if tokens are enabled
+          if (tokensEnabled) {
+            const baseUrl = getBaseUrl();
+            const signedPdfUrl = reportAuthTokens.generateSignedUrl({
+              reportId: runId,
+              reportType: 'pdf',
+              baseUrl,
+              permissions: ['read', 'download']
+            });
+            run.signedPdfUrl = signedPdfUrl;
+            console.log('🔐 Generated signed PDF URL for secure access');
+          }
+          
           console.log('✅ PDF saved for download:', pdfUrl);
         }
       } catch (pdfError) {
@@ -434,17 +497,34 @@ class ReportScheduler {
 
       // Handle delivery
       if (this.config.delivery === 'email' && this.config.email) {
+        // Prepare URLs for email - use signed URLs if available, otherwise regular URLs
+        const baseUrl = getBaseUrl();
+        const emailSignedUrls = {
+          reportUrl: run.signedUrl || `${baseUrl}${run.reportUrl}`,
+          pdfUrl: run.signedPdfUrl || (run.pdfUrl ? `${baseUrl}${run.pdfUrl}` : undefined)
+        };
+        
         // Generate email-optimized version for sending
-        const emailHtml = await generateEmailReport(data, summary, this.config);
+        const emailHtml = await generateEmailReport(data, summary, this.config, emailSignedUrls);
         await sendEmail(this.config.email, emailHtml, `${this.config.platform.toUpperCase()} Report`, pdfAttachment);
         console.log('📧 Sent email-optimized report version' + (pdfAttachment ? ' with PDF attachment' : ''));
+        
+        if (run.signedUrl || run.signedPdfUrl) {
+          console.log('🔐 Email includes secure action button with signed URL');
+        } else {
+          console.log('🔓 Email includes public action button');
+        }
       }
 
       this.status.lastRun = new Date();
-      this.status.reportPath = run.reportUrl;
       
-      // Set PDF path if available
-      if (run.pdfUrl) {
+      // Use signed URLs if available, otherwise use regular URLs
+      this.status.reportPath = run.signedUrl || run.reportUrl;
+      
+      // Set PDF path if available (prefer signed URL)
+      if (run.signedPdfUrl) {
+        this.status.pdfPath = run.signedPdfUrl;
+      } else if (run.pdfUrl) {
         this.status.pdfPath = run.pdfUrl;
       }
 
