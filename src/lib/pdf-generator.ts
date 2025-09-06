@@ -116,10 +116,10 @@ export async function generatePdfFromHtml(htmlContent: string, options: PdfOptio
     const pdfBuffer = await page.pdf({
       format: options.format || 'A4',
       margin: {
-        top: options.margins?.top || '10px',
-        right: options.margins?.right || '10px',
-        bottom: options.margins?.bottom || '10px',
-        left: options.margins?.left || '10px'
+        top: options.margins?.top || '0px',
+        right: options.margins?.right || '0px',
+        bottom: options.margins?.bottom || '0px',
+        left: options.margins?.left || '0px'
       },
       printBackground: true,
       preferCSSPageSize: false,

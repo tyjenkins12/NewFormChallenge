@@ -19,10 +19,20 @@ export async function fetchAdData(config: ReportConfig): Promise<Record<string, 
     // Add default timeIncrement for Meta if not provided
     body.timeIncrement = config.timeIncrement || '7';
   } else if (config.platform === 'tiktok') {
+    // TikTok requires dimensions - use selected ones or level-appropriate defaults
     if (config.dimensions?.length) {
       body.dimensions = config.dimensions;
+    } else {
+      // Set default dimensions based on level
+      if (config.level === 'AUCTION_ADVERTISER') {
+        body.dimensions = ['advertiser_id'];
+      } else if (config.level === 'AUCTION_AD') {
+        body.dimensions = ['ad_id'];
+      } else { // AUCTION_CAMPAIGN
+        body.dimensions = ['campaign_id'];
+      }
     }
-    // Add default reportType for TikTok if not provided
+    // Add reportType for TikTok
     body.reportType = config.reportType || 'BASIC';
   }
 
@@ -59,8 +69,51 @@ export async function fetchAdData(config: ReportConfig): Promise<Record<string, 
     return [];
   }
   
-  // Return array
-  return Array.isArray(data) ? data : [];
+  const dataArray = Array.isArray(data) ? data : [];
+  
+  // Transform TikTok nested format to flat format expected by report generator
+  if (config.platform === 'tiktok') {
+    const transformedData = dataArray.map(item => {
+      const flatItem: Record<string, unknown> = {};
+      
+      // Flatten metrics object to top level
+      if (item.metrics && typeof item.metrics === 'object') {
+        Object.entries(item.metrics).forEach(([key, value]) => {
+          flatItem[key] = value;
+        });
+      }
+      
+      // Flatten dimensions object to top level
+      if (item.dimensions && typeof item.dimensions === 'object') {
+        Object.entries(item.dimensions).forEach(([key, value]) => {
+          flatItem[key] = value;
+        });
+      }
+      
+      // Keep any other properties at top level
+      Object.entries(item).forEach(([key, value]) => {
+        if (key !== 'metrics' && key !== 'dimensions') {
+          flatItem[key] = value;
+        }
+      });
+      
+      return flatItem;
+    });
+    
+    // Filter out records where all selected metrics are zero
+    const filteredData = transformedData.filter(item => {
+      return config.metrics.some(metric => {
+        const value = parseFloat(String(item[metric])) || 0;
+        return value > 0;
+      });
+    });
+    
+    console.log(`📊 TikTok data: ${dataArray.length} total records, ${filteredData.length} with non-zero values`);
+    return filteredData;
+  }
+  
+  // Return array as-is for other platforms (Meta)
+  return dataArray;
 }
 
 export async function generateLLMSummary(data: Record<string, unknown>[], config: ReportConfig): Promise<string> {

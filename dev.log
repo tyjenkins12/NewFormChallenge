@@ -1,0 +1,19 @@
+
+> scheduled-insight-reports@0.1.0 dev
+> next dev
+
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/tyjenkins/yarn.lock as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * /Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/package-lock.json
+
+ ⚠ Port 3000 is in use by process 1836, using available port 3004 instead.
+   ▲ Next.js 15.5.2
+   - Local:        http://localhost:3004
+   - Network:      http://192.168.22.225:3004
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 1202ms

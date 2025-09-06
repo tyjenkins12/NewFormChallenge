@@ -49,15 +49,13 @@ export interface SchedulerStatus {
 
 // Platform-specific parameters
 export const TIKTOK_METRICS = [
-  'spend', 'impressions', 'clicks', 'conversions', 'cost_per_conversion',
+  'spend', 'impressions', 'clicks', 'cost_per_conversion',
   'conversion_rate', 'ctr', 'cpc', 'reach', 'frequency', 'skan_app_install',
   'skan_cost_per_app_install', 'skan_purchase', 'skan_cost_per_purchase'
 ];
 
 export const TIKTOK_DIMENSIONS = [
-  'ad_id', 'campaign_id', 'adgroup_id', 'advertiser_id', 'stat_time_day',
-  'campaign_name', 'adgroup_name', 'ad_name', 'country_code', 'age',
-  'gender', 'province_id', 'dma_id'
+  'ad_id', 'campaign_id', 'advertiser_id', 'stat_time_day', 'country_code'
 ];
 
 export const TIKTOK_LEVELS = [
