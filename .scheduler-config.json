@@ -1,0 +1,22 @@
+{
+  "platform": "meta",
+  "metrics": [
+    "clicks",
+    "conversions",
+    "impressions",
+    "ctr",
+    "spend"
+  ],
+  "level": "adset",
+  "breakdowns": [
+    "age"
+  ],
+  "dimensions": [],
+  "dateRangeEnum": "last30",
+  "cadence": "manual",
+  "delivery": "email",
+  "email": "tyjen1218@gmail.com",
+  "timeIncrement": "7",
+  "reportType": "BASIC",
+  "id": "1685df3f-2d36-4cdf-a0d9-d85d04223dc1"
+}

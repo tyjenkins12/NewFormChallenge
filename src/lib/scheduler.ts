@@ -13,6 +13,7 @@ class ReportScheduler {
   private config: ReportConfig | null = null;
   private status: SchedulerStatus = { isRunning: false };
   private reportRuns: ReportRun[] = [];
+  private configFilePath = path.join(process.cwd(), '.scheduler-config.json');
 
   static getInstance(): ReportScheduler {
     if (!ReportScheduler.instance) {
@@ -21,8 +22,35 @@ class ReportScheduler {
     return ReportScheduler.instance;
   }
 
+  private async loadConfig(): Promise<void> {
+    try {
+      const configData = await fs.readFile(this.configFilePath, 'utf8');
+      this.config = JSON.parse(configData);
+      console.log('📂 Scheduler: Loaded config from file');
+    } catch (error) {
+      console.log('📂 Scheduler: No config file found');
+      this.config = null;
+    }
+  }
+
+  private async saveConfig(): Promise<void> {
+    if (this.config) {
+      try {
+        await fs.writeFile(this.configFilePath, JSON.stringify(this.config, null, 2));
+        console.log('💾 Scheduler: Config saved to file');
+      } catch (error) {
+        console.error('❌ Scheduler: Failed to save config:', error);
+      }
+    }
+  }
+
   async scheduleReport(config: ReportConfig): Promise<void> {
+    console.log('📝 Scheduler: Received config:', JSON.stringify(config, null, 2));
     this.config = { ...config, id: config.id || uuidv4() };
+    console.log('✅ Scheduler: Config stored with ID:', this.config.id);
+    
+    // Save config to file for persistence across API calls
+    await this.saveConfig();
     
     // Stop existing task
     if (this.currentTask) {
@@ -36,6 +64,9 @@ class ReportScheduler {
       this.currentTask = cron.schedule(cronExpression, () => {
         this.runReport();
       });
+      console.log('⏰ Scheduler: Scheduled with cron:', cronExpression);
+    } else {
+      console.log('📋 Scheduler: Manual mode - no cron scheduled');
     }
 
     this.updateStatus();
@@ -55,7 +86,21 @@ class ReportScheduler {
   }
 
   async runReport(): Promise<ReportRun> {
+    console.log('🚀 Scheduler: Running report...');
+    
+    // Try to load config from file if not in memory
     if (!this.config) {
+      console.log('📂 Scheduler: No config in memory, attempting to load from file...');
+      await this.loadConfig();
+    }
+    
+    console.log('📋 Scheduler: Current config exists?', !!this.config);
+    if (this.config) {
+      console.log('📄 Scheduler: Config details:', { platform: this.config.platform, cadence: this.config.cadence });
+    }
+    
+    if (!this.config) {
+      console.error('❌ Scheduler: No configuration found!');
       throw new Error('No report configuration found');
     }
 
@@ -73,6 +118,7 @@ class ReportScheduler {
     try {
       // Fetch data from API
       const data = await fetchAdData(this.config);
+      console.log(`📊 Scheduler: Retrieved ${data.length} records from NewForm API`);
       
       // Generate LLM summary
       const summary = await generateLLMSummary(data, this.config);
@@ -89,6 +135,18 @@ class ReportScheduler {
       run.status = 'success';
       run.reportPath = reportPath;
       run.reportUrl = `/reports/report-${runId}.html`;
+
+      // Check if we have insufficient data and set appropriate error
+      if (data.length === 0) {
+        const errorMessage = `No data available for ${this.config.platform} ${this.config.level} level with ${this.config.dateRangeEnum} date range. Try 'campaign' level or 'last30' date range for better data availability.`;
+        console.log(`⚠️ Scheduler: ${errorMessage}`);
+        this.status.lastError = errorMessage;
+        console.log('📄 Scheduler: Generated report with "No data available" message');
+      } else {
+        // Clear any previous error since we have data now
+        this.status.lastError = undefined;
+        console.log('✅ Scheduler: Generated report with real data');
+      }
 
       // Handle delivery
       if (this.config.delivery === 'email' && this.config.email) {

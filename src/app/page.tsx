@@ -31,23 +31,27 @@ const platforms = [
   { value: "tiktok", label: "TikTok" },
 ];
 
-const metaMetrics = [
-  { id: "impressions", label: "Impressions" },
-  { id: "clicks", label: "Clicks" },
-  { id: "ctr", label: "Click-through Rate" },
-  { id: "cpm", label: "Cost per Mille" },
-  { id: "conversions", label: "Conversions" },
-  { id: "roas", label: "Return on Ad Spend" },
-];
+// Import from types to ensure consistency with API
+import { 
+  META_METRICS, 
+  META_BREAKDOWNS, 
+  META_LEVELS,
+  TIKTOK_METRICS, 
+  TIKTOK_DIMENSIONS, 
+  TIKTOK_LEVELS,
+  DATE_RANGES,
+  CADENCES
+} from '@/types';
 
-const tiktokMetrics = [
-  { id: "views", label: "Video Views" },
-  { id: "likes", label: "Likes" },
-  { id: "shares", label: "Shares" },
-  { id: "comments", label: "Comments" },
-  { id: "completion_rate", label: "Completion Rate" },
-  { id: "engagement_rate", label: "Engagement Rate" },
-];
+const metaMetrics = META_METRICS.map(metric => ({ 
+  id: metric, 
+  label: metric.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) 
+}));
+
+const tiktokMetrics = TIKTOK_METRICS.map(metric => ({ 
+  id: metric, 
+  label: metric.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) 
+}));
 
 export default function Configure() {
   const { toast } = useToast();
@@ -56,10 +60,14 @@ export default function Configure() {
     platform: "",
     metrics: [] as string[],
     level: "",
-    dateRange: "",
+    dateRangeEnum: "", // Changed from dateRange
     cadence: "",
     delivery: "",
     email: "",
+    breakdowns: [] as string[], // For Meta
+    dimensions: [] as string[], // For TikTok
+    timeIncrement: "7", // Default for Meta
+    reportType: "BASIC" as "BASIC" | "AUDIENCE", // Default for TikTok
   });
   
   const [demoMode, setDemoMode] = useState({
@@ -100,18 +108,57 @@ export default function Configure() {
     });
   };
 
-  const handleSaveAndStart = () => {
+  const handleSaveAndStart = async () => {
     console.log("Saving and starting configuration:", config, demoMode);
-    const configData = { config, demoMode, savedAt: new Date().toISOString(), started: true };
-    localStorage.setItem('reportConfig', JSON.stringify(configData));
-    toast({
-      title: "Configuration Saved & Started",
-      description: "Your report is now configured and running. Redirecting to dashboard...",
-    });
-    // Navigate to dashboard after a short delay to show the toast
-    setTimeout(() => {
-      router.push('/dashboard');
-    }, 1500);
+    
+    try {
+      // Save to localStorage for UI persistence
+      const configData = { config, demoMode, savedAt: new Date().toISOString(), started: true };
+      localStorage.setItem('reportConfig', JSON.stringify(configData));
+
+      // Send to scheduler API
+      const response = await fetch('/api/scheduler', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          platform: config.platform,
+          metrics: config.metrics,
+          level: config.level,
+          breakdowns: config.breakdowns,
+          dimensions: config.dimensions,
+          dateRangeEnum: config.dateRangeEnum,
+          cadence: config.cadence,
+          delivery: config.delivery,
+          email: config.email,
+          timeIncrement: config.timeIncrement,
+          reportType: config.reportType,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to start scheduler');
+      }
+
+      toast({
+        title: "Configuration Saved & Started",
+        description: "Your report is now configured and running. Redirecting to dashboard...",
+      });
+      
+      // Navigate to dashboard after a short delay to show the toast
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 1500);
+    } catch (error) {
+      console.error('Failed to save and start:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to start report configuration",
+        variant: "destructive",
+      });
+    }
   };
 
   const getAvailableMetrics = () => {
@@ -120,18 +167,15 @@ export default function Configure() {
 
   const getLevelOptions = () => {
     if (config.platform === "meta") {
-      return [
-        { value: "account", label: "Account Level" },
-        { value: "campaign", label: "Campaign Level" },
-        { value: "adset", label: "Ad Set Level" },
-        { value: "ad", label: "Ad Level" },
-      ];
+      return META_LEVELS.map(level => ({
+        value: level,
+        label: level.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+      }));
     }
-    return [
-      { value: "account", label: "Account Level" },
-      { value: "campaign", label: "Campaign Level" },
-      { value: "ad", label: "Ad Level" },
-    ];
+    return TIKTOK_LEVELS.map(level => ({
+      value: level,
+      label: level.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    }));
   };
 
   const handleMetricToggle = (metricId: string, checked: boolean | string) => {
@@ -145,7 +189,7 @@ export default function Configure() {
   };
 
   const validateConfig = useCallback(() => {
-    const required = config.platform && config.metrics.length > 0 && config.level && config.dateRange && config.cadence && config.delivery;
+    const required = config.platform && config.metrics.length > 0 && config.level && config.dateRangeEnum && config.cadence && config.delivery;
     const emailValid = config.delivery !== "email" || config.email;
     const isConfigValid = !!(required && emailValid);
     setIsValid(isConfigValid);
@@ -179,7 +223,14 @@ export default function Configure() {
               {/* Platform Selection */}
               <div className="space-y-2">
                 <Label htmlFor="platform">Platform *</Label>
-                <Select value={config.platform} onValueChange={(value) => setConfig(prev => ({ ...prev, platform: value, metrics: [], level: "" }))}>
+                <Select value={config.platform} onValueChange={(value) => setConfig(prev => ({ 
+                  ...prev, 
+                  platform: value, 
+                  metrics: [], 
+                  level: "",
+                  breakdowns: [],
+                  dimensions: []
+                }))}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a platform" />
                   </SelectTrigger>
@@ -241,17 +292,77 @@ export default function Configure() {
                 </div>
               )}
 
+              {/* Meta Breakdowns */}
+              {config.platform === "meta" && (
+                <div className="space-y-3">
+                  <Label>Breakdowns (optional)</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {META_BREAKDOWNS.map(breakdown => (
+                      <div key={breakdown} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={breakdown}
+                          checked={config.breakdowns.includes(breakdown)}
+                          onCheckedChange={(checked) => {
+                            const isChecked = checked === true;
+                            setConfig(prev => ({
+                              ...prev,
+                              breakdowns: isChecked 
+                                ? [...prev.breakdowns, breakdown]
+                                : prev.breakdowns.filter(b => b !== breakdown)
+                            }));
+                          }}
+                        />
+                        <Label htmlFor={breakdown} className="text-sm">
+                          {breakdown.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* TikTok Dimensions */}
+              {config.platform === "tiktok" && (
+                <div className="space-y-3">
+                  <Label>Dimensions (optional)</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {TIKTOK_DIMENSIONS.map(dimension => (
+                      <div key={dimension} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={dimension}
+                          checked={config.dimensions.includes(dimension)}
+                          onCheckedChange={(checked) => {
+                            const isChecked = checked === true;
+                            setConfig(prev => ({
+                              ...prev,
+                              dimensions: isChecked 
+                                ? [...prev.dimensions, dimension]
+                                : prev.dimensions.filter(d => d !== dimension)
+                            }));
+                          }}
+                        />
+                        <Label htmlFor={dimension} className="text-sm">
+                          {dimension.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Date Range */}
               <div className="space-y-2">
                 <Label htmlFor="dateRange">Date Range *</Label>
-                <Select value={config.dateRange} onValueChange={(value) => setConfig(prev => ({ ...prev, dateRange: value }))}>
+                <Select value={config.dateRangeEnum} onValueChange={(value) => setConfig(prev => ({ ...prev, dateRangeEnum: value }))}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select date range" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="7">Last 7 days</SelectItem>
-                    <SelectItem value="14">Last 14 days</SelectItem>
-                    <SelectItem value="30">Last 30 days</SelectItem>
+                    {DATE_RANGES.map(range => (
+                      <SelectItem key={range.value} value={range.value}>
+                        {range.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -264,10 +375,11 @@ export default function Configure() {
                     <SelectValue placeholder="Select report frequency" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="manual">Manual</SelectItem>
-                    <SelectItem value="hourly">Hourly</SelectItem>
-                    <SelectItem value="12h">Every 12 hours</SelectItem>
-                    <SelectItem value="daily">Daily</SelectItem>
+                    {CADENCES.map(cadence => (
+                      <SelectItem key={cadence.value} value={cadence.value}>
+                        {cadence.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

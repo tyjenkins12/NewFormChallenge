@@ -1,28 +1,10 @@
-import { ReportConfig } from '@/types';
 
-export async function generateReport(data: Record<string, unknown>[], summary: string, config: ReportConfig): Promise<string> {
-  // Handle empty data gracefully
-  const hasData = data && data.length > 0;
-  
-  // Generate chart data (with sample data if empty)
-  const chartData = hasData 
-    ? data.slice(0, 10).map((item, index) => ({
-        name: String(item.campaign_name || item.ad_name || `Item ${index + 1}`),
-        spend: parseFloat(String(item.spend)) || 0,
-        impressions: parseInt(String(item.impressions)) || 0,
-        clicks: parseInt(String(item.clicks)) || 0,
-      }))
-    : [
-        { name: 'No Data Available', spend: 0, impressions: 0, clicks: 0 }
-      ];
-
-  const html = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${config.platform.toUpperCase()} Insight Report</title>
+    <title>META Insight Report</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -137,15 +119,48 @@ export async function generateReport(data: Record<string, unknown>[], summary: s
 </head>
 <body>
     <div class="header">
-        <h1>${config.platform.toUpperCase()} Insight Report</h1>
-        <p>Generated on ${new Date().toLocaleDateString()} • ${config.dateRangeEnum.replace('last', 'Last ').replace(/(\d+)/, '$1 days')}</p>
+        <h1>META Insight Report</h1>
+        <p>Generated on 9/5/2025 • Last 30 days</p>
     </div>
 
-    ${generateMetricsCards(data)}
+    
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-label">Total Spend</div>
+            <div class="metric-value">$0.00</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Total Impressions</div>
+            <div class="metric-value">0</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Total Clicks</div>
+            <div class="metric-value">319,805</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Average CTR</div>
+            <div class="metric-value">0.00%</div>
+        </div>
+    </div>
+  
 
     <div class="summary">
         <h2 style="color: #374151; margin-top: 0;">Executive Summary</h2>
-        <div style="white-space: pre-line;">${summary}</div>
+        <div style="white-space: pre-line;">
+    ## META Campaign Performance Summary
+    
+    **Period**: Last 30 days
+    
+    **Key Metrics:**
+    - Total Spend: $0.00
+    - Total Impressions: 0
+    - Total Clicks: 319,805
+    - Average CTR: 0%
+    
+    **Analysis**: Your meta campaigns generated 0 impressions 
+    with 319,805 clicks, resulting in a 0% click-through rate. 
+    Total advertising spend was $0.00.
+  </div>
     </div>
 
     <div class="chart-container">
@@ -156,13 +171,105 @@ export async function generateReport(data: Record<string, unknown>[], summary: s
     <div class="data-table">
         <h2>Detailed Data</h2>
         <div style="overflow-x: auto;">
-            ${generateDataTable(data)}
+            
+    <table>
+        <thead>
+            <tr>
+                <th>CLICKS</th><th>DATE START</th><th>DATE STOP</th><th>AGE</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+                <tr>
+                    <td>527</td><td>2025-08-06</td><td>2025-08-12</td><td>18-24</td>
+                </tr>
+            
+                <tr>
+                    <td>960</td><td>2025-08-06</td><td>2025-08-12</td><td>25-34</td>
+                </tr>
+            
+                <tr>
+                    <td>328</td><td>2025-08-06</td><td>2025-08-12</td><td>35-44</td>
+                </tr>
+            
+                <tr>
+                    <td>96</td><td>2025-08-06</td><td>2025-08-12</td><td>45-54</td>
+                </tr>
+            
+                <tr>
+                    <td>63</td><td>2025-08-06</td><td>2025-08-12</td><td>55-64</td>
+                </tr>
+            
+                <tr>
+                    <td>66</td><td>2025-08-06</td><td>2025-08-12</td><td>65+</td>
+                </tr>
+            
+                <tr>
+                    <td>750</td><td>2025-08-06</td><td>2025-08-12</td><td>18-24</td>
+                </tr>
+            
+                <tr>
+                    <td>1678</td><td>2025-08-06</td><td>2025-08-12</td><td>25-34</td>
+                </tr>
+            
+                <tr>
+                    <td>1168</td><td>2025-08-06</td><td>2025-08-12</td><td>35-44</td>
+                </tr>
+            
+                <tr>
+                    <td>469</td><td>2025-08-06</td><td>2025-08-12</td><td>45-54</td>
+                </tr>
+            
+                <tr>
+                    <td>415</td><td>2025-08-06</td><td>2025-08-12</td><td>55-64</td>
+                </tr>
+            
+                <tr>
+                    <td>327</td><td>2025-08-06</td><td>2025-08-12</td><td>65+</td>
+                </tr>
+            
+                <tr>
+                    <td>69</td><td>2025-08-06</td><td>2025-08-12</td><td>18-24</td>
+                </tr>
+            
+                <tr>
+                    <td>188</td><td>2025-08-06</td><td>2025-08-12</td><td>25-34</td>
+                </tr>
+            
+                <tr>
+                    <td>196</td><td>2025-08-06</td><td>2025-08-12</td><td>35-44</td>
+                </tr>
+            
+                <tr>
+                    <td>120</td><td>2025-08-06</td><td>2025-08-12</td><td>45-54</td>
+                </tr>
+            
+                <tr>
+                    <td>58</td><td>2025-08-06</td><td>2025-08-12</td><td>55-64</td>
+                </tr>
+            
+                <tr>
+                    <td>48</td><td>2025-08-06</td><td>2025-08-12</td><td>65+</td>
+                </tr>
+            
+                <tr>
+                    <td>21</td><td>2025-08-06</td><td>2025-08-12</td><td>18-24</td>
+                </tr>
+            
+                <tr>
+                    <td>85</td><td>2025-08-06</td><td>2025-08-12</td><td>25-34</td>
+                </tr>
+            
+        </tbody>
+    </table>
+    <p style="padding: 20px; text-align: center; color: #6b7280;">Showing first 20 of 783 rows</p>
+  
         </div>
     </div>
 
     <div class="footer">
         <p>Report generated by Scheduled Insight Reports</p>
-        <p>Data sourced from ${config.platform.toUpperCase()} API</p>
+        <p>Data sourced from META API</p>
     </div>
 
     <script>
@@ -170,11 +277,11 @@ export async function generateReport(data: Record<string, unknown>[], summary: s
         const chart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ${JSON.stringify(chartData.map(d => d.name))},
+                labels: ["Item 1","Item 2","Item 3","Item 4","Item 5","Item 6","Item 7","Item 8","Item 9","Item 10"],
                 datasets: [
                     {
                         label: 'Spend ($)',
-                        data: ${JSON.stringify(chartData.map(d => d.spend))},
+                        data: [0,0,0,0,0,0,0,0,0,0],
                         backgroundColor: 'rgba(99, 102, 241, 0.8)',
                         borderColor: 'rgba(99, 102, 241, 1)',
                         borderWidth: 1,
@@ -182,7 +289,7 @@ export async function generateReport(data: Record<string, unknown>[], summary: s
                     },
                     {
                         label: 'Impressions',
-                        data: ${JSON.stringify(chartData.map(d => d.impressions))},
+                        data: [0,0,0,0,0,0,0,0,0,0],
                         backgroundColor: 'rgba(34, 197, 94, 0.8)',
                         borderColor: 'rgba(34, 197, 94, 1)',
                         borderWidth: 1,
@@ -195,7 +302,7 @@ export async function generateReport(data: Record<string, unknown>[], summary: s
                 plugins: {
                     title: {
                         display: true,
-                        text: '${config.platform.toUpperCase()} Performance Data'
+                        text: 'META Performance Data'
                     },
                     legend: {
                         position: 'top',
@@ -228,77 +335,4 @@ export async function generateReport(data: Record<string, unknown>[], summary: s
         });
     </script>
 </body>
-</html>`;
-
-  return html;
-}
-
-function generateMetricsCards(data: Record<string, unknown>[]): string {
-  const totalSpend = data.reduce((sum, item) => sum + (parseFloat(String(item.spend)) || 0), 0);
-  const totalImpressions = data.reduce((sum, item) => sum + (parseInt(String(item.impressions)) || 0), 0);
-  const totalClicks = data.reduce((sum, item) => sum + (parseInt(String(item.clicks)) || 0), 0);
-  const avgCTR = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100) : 0;
-
-  return `
-    <div class="metrics-grid">
-        <div class="metric-card">
-            <div class="metric-label">Total Spend</div>
-            <div class="metric-value">$${totalSpend.toFixed(2)}</div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-label">Total Impressions</div>
-            <div class="metric-value">${totalImpressions.toLocaleString()}</div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-label">Total Clicks</div>
-            <div class="metric-value">${totalClicks.toLocaleString()}</div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-label">Average CTR</div>
-            <div class="metric-value">${avgCTR.toFixed(2)}%</div>
-        </div>
-    </div>
-  `;
-}
-
-function generateDataTable(data: Record<string, unknown>[]): string {
-  if (!data || data.length === 0) {
-    return '<p>No data available</p>';
-  }
-
-  const headers = Object.keys(data[0]);
-  const maxRows = Math.min(data.length, 20); // Limit to first 20 rows
-
-  return `
-    <table>
-        <thead>
-            <tr>
-                ${headers.map(header => `<th>${header.replace(/_/g, ' ').toUpperCase()}</th>`).join('')}
-            </tr>
-        </thead>
-        <tbody>
-            ${data.slice(0, maxRows).map(row => `
-                <tr>
-                    ${headers.map(header => `<td>${formatValue(row[header])}</td>`).join('')}
-                </tr>
-            `).join('')}
-        </tbody>
-    </table>
-    ${data.length > maxRows ? `<p style="padding: 20px; text-align: center; color: #6b7280;">Showing first ${maxRows} of ${data.length} rows</p>` : ''}
-  `;
-}
-
-function formatValue(value: unknown): string {
-  if (value === null || value === undefined) return '-';
-  if (typeof value === 'number') {
-    if (value % 1 !== 0) {
-      return value.toFixed(2);
-    }
-    return value.toLocaleString();
-  }
-  return String(value);
-}
-
-export const reportGenerator = {
-  generateReport
-};
+</html>

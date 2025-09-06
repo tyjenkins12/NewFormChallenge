@@ -1,0 +1,338 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>META Insight Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8fafc;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5em;
+        }
+        .header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        .summary {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .chart-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .chart-container h2 {
+            color: #374151;
+            margin-top: 0;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .metric-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4f46e5;
+            margin: 10px 0;
+        }
+        .metric-label {
+            color: #6b7280;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .data-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .data-table h2 {
+            background: #f8fafc;
+            margin: 0;
+            padding: 20px 30px;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+        }
+        tr:hover {
+            background-color: #f8fafc;
+        }
+        .footer {
+            text-align: center;
+            color: #6b7280;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+        canvas {
+            max-height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>META Insight Report</h1>
+        <p>Generated on 9/5/2025 • Last 30 days</p>
+    </div>
+
+    
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-label">Total Spend</div>
+            <div class="metric-value">$381056.03</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Total Impressions</div>
+            <div class="metric-value">37,845,655</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Total Clicks</div>
+            <div class="metric-value">319,805</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Average CTR</div>
+            <div class="metric-value">0.85%</div>
+        </div>
+    </div>
+  
+
+    <div class="summary">
+        <h2 style="color: #374151; margin-top: 0;">Executive Summary</h2>
+        <div style="white-space: pre-line;">
+    ## META Campaign Performance Summary
+    
+    **Period**: Last 30 days
+    
+    **Key Metrics:**
+    - Total Spend: $381056.03
+    - Total Impressions: 37,845,655
+    - Total Clicks: 319,805
+    - Average CTR: 0.85%
+    
+    **Analysis**: Your meta campaigns generated 37,845,655 impressions 
+    with 319,805 clicks, resulting in a 0.85% click-through rate. 
+    Total advertising spend was $381056.03.
+  </div>
+    </div>
+
+    <div class="chart-container">
+        <h2>Performance Overview</h2>
+        <canvas id="performanceChart"></canvas>
+    </div>
+
+    <div class="data-table">
+        <h2>Detailed Data</h2>
+        <div style="overflow-x: auto;">
+            
+    <table>
+        <thead>
+            <tr>
+                <th>CLICKS</th><th>IMPRESSIONS</th><th>CTR</th><th>SPEND</th><th>DATE START</th><th>DATE STOP</th><th>AGE</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+                <tr>
+                    <td>527</td><td>117748</td><td>0.447566</td><td>1518.79</td><td>2025-08-06</td><td>2025-08-12</td><td>18-24</td>
+                </tr>
+            
+                <tr>
+                    <td>960</td><td>173542</td><td>0.55318</td><td>2901.46</td><td>2025-08-06</td><td>2025-08-12</td><td>25-34</td>
+                </tr>
+            
+                <tr>
+                    <td>328</td><td>58902</td><td>0.556857</td><td>1268.43</td><td>2025-08-06</td><td>2025-08-12</td><td>35-44</td>
+                </tr>
+            
+                <tr>
+                    <td>96</td><td>20445</td><td>0.469552</td><td>475.04</td><td>2025-08-06</td><td>2025-08-12</td><td>45-54</td>
+                </tr>
+            
+                <tr>
+                    <td>63</td><td>8946</td><td>0.704225</td><td>271.41</td><td>2025-08-06</td><td>2025-08-12</td><td>55-64</td>
+                </tr>
+            
+                <tr>
+                    <td>66</td><td>4339</td><td>1.521088</td><td>158.2</td><td>2025-08-06</td><td>2025-08-12</td><td>65+</td>
+                </tr>
+            
+                <tr>
+                    <td>750</td><td>59485</td><td>1.260822</td><td>683.147283</td><td>2025-08-06</td><td>2025-08-12</td><td>18-24</td>
+                </tr>
+            
+                <tr>
+                    <td>1678</td><td>148984</td><td>1.126295</td><td>1826.112738</td><td>2025-08-06</td><td>2025-08-12</td><td>25-34</td>
+                </tr>
+            
+                <tr>
+                    <td>1168</td><td>102140</td><td>1.143528</td><td>1285.624888</td><td>2025-08-06</td><td>2025-08-12</td><td>35-44</td>
+                </tr>
+            
+                <tr>
+                    <td>469</td><td>43455</td><td>1.079277</td><td>607.397585</td><td>2025-08-06</td><td>2025-08-12</td><td>45-54</td>
+                </tr>
+            
+                <tr>
+                    <td>415</td><td>21287</td><td>1.949547</td><td>352.1086</td><td>2025-08-06</td><td>2025-08-12</td><td>55-64</td>
+                </tr>
+            
+                <tr>
+                    <td>327</td><td>13569</td><td>2.409905</td><td>275.108906</td><td>2025-08-06</td><td>2025-08-12</td><td>65+</td>
+                </tr>
+            
+                <tr>
+                    <td>69</td><td>23256</td><td>0.296698</td><td>130.747871</td><td>2025-08-06</td><td>2025-08-12</td><td>18-24</td>
+                </tr>
+            
+                <tr>
+                    <td>188</td><td>96588</td><td>0.194641</td><td>427.203043</td><td>2025-08-06</td><td>2025-08-12</td><td>25-34</td>
+                </tr>
+            
+                <tr>
+                    <td>196</td><td>115190</td><td>0.170154</td><td>389.33366</td><td>2025-08-06</td><td>2025-08-12</td><td>35-44</td>
+                </tr>
+            
+                <tr>
+                    <td>120</td><td>60906</td><td>0.197025</td><td>165.577304</td><td>2025-08-06</td><td>2025-08-12</td><td>45-54</td>
+                </tr>
+            
+                <tr>
+                    <td>58</td><td>30898</td><td>0.187714</td><td>77.168743</td><td>2025-08-06</td><td>2025-08-12</td><td>55-64</td>
+                </tr>
+            
+                <tr>
+                    <td>48</td><td>15248</td><td>0.314795</td><td>38.109379</td><td>2025-08-06</td><td>2025-08-12</td><td>65+</td>
+                </tr>
+            
+                <tr>
+                    <td>21</td><td>5823</td><td>0.360639</td><td>34.55</td><td>2025-08-06</td><td>2025-08-12</td><td>18-24</td>
+                </tr>
+            
+                <tr>
+                    <td>85</td><td>29815</td><td>0.285091</td><td>155.21</td><td>2025-08-06</td><td>2025-08-12</td><td>25-34</td>
+                </tr>
+            
+        </tbody>
+    </table>
+    <p style="padding: 20px; text-align: center; color: #6b7280;">Showing first 20 of 783 rows</p>
+  
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Report generated by Scheduled Insight Reports</p>
+        <p>Data sourced from META API</p>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ["Item 1","Item 2","Item 3","Item 4","Item 5","Item 6","Item 7","Item 8","Item 9","Item 10"],
+                datasets: [
+                    {
+                        label: 'Spend ($)',
+                        data: [1518.79,2901.46,1268.43,475.04,271.41,158.2,683.147283,1826.112738,1285.624888,607.397585],
+                        backgroundColor: 'rgba(99, 102, 241, 0.8)',
+                        borderColor: 'rgba(99, 102, 241, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'y',
+                    },
+                    {
+                        label: 'Impressions',
+                        data: [117748,173542,58902,20445,8946,4339,59485,148984,102140,43455],
+                        backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                        borderColor: 'rgba(34, 197, 94, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'y1',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'META Performance Data'
+                    },
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Spend ($)'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Impressions'
+                        },
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

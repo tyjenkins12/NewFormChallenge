@@ -1,33 +1,39 @@
-import nodemailer from 'nodemailer';
-
 export async function sendEmail(to: string, htmlContent: string, subject: string): Promise<void> {
-  // Configure with environment variables for security
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: false, // true for 465, false for other ports
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-
-  // Only send email if SMTP is configured
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    console.log('Email delivery skipped - SMTP not configured');
-    console.log(`Would send email to: ${to}`);
-    console.log(`Subject: ${subject}`);
+  // Check if Resend API key is configured
+  if (!process.env.RESEND_API_KEY) {
+    console.log('📧 Email delivery skipped - RESEND_API_KEY not configured');
+    console.log(`📤 Would send email to: ${to}`);
+    console.log(`📋 Subject: ${subject}`);
     return;
   }
 
-  const info = await transporter.sendMail({
-    from: process.env.SMTP_FROM || process.env.SMTP_USER,
-    to,
-    subject,
-    html: htmlContent,
-  });
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: 'onboarding@resend.dev', // Using verified Resend domain
+        to: [to],
+        subject: subject,
+        html: htmlContent
+      })
+    });
 
-  console.log('Email sent:', info.messageId);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Resend API error: ${response.status} - ${JSON.stringify(errorData)}`);
+    }
+
+    const result = await response.json();
+    console.log('📧 Email sent successfully via Resend API:', result.id);
+    
+  } catch (error) {
+    console.error('❌ Failed to send email via Resend API:', error);
+    throw error;
+  }
 }
 
 export const emailService = {
