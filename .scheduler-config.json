@@ -2,11 +2,11 @@
   "config": {
     "platform": "meta",
     "metrics": [
-      "spend",
       "clicks",
-      "impressions"
+      "spend",
+      "cpc"
     ],
-    "level": "campaign",
+    "level": "adset",
     "breakdowns": [
       "age"
     ],
@@ -17,22 +17,38 @@
     "email": "",
     "timeIncrement": "7",
     "reportType": "BASIC",
-    "id": "a03bedb7-b4b7-4603-b781-ee09d4043f43"
+    "id": "324d62c2-8134-43df-9985-8dd5c547a45c"
   },
   "status": {
     "isRunning": true,
-    "lastRun": "2025-09-06T03:06:00.753Z",
-    "reportPath": "/reports/report-38fda5e1-a321-44ed-83b5-84b8d1ac0adb.html",
-    "nextRun": "2025-09-06T04:26:35.265Z"
+    "nextRun": "2025-09-06T04:39:28.953Z",
+    "lastRun": "2025-09-06T03:39:28.953Z",
+    "reportPath": "/reports/report-d9f21a62-0868-44b0-a367-86aba16c841f.html"
   },
   "reportRuns": [
     {
-      "id": "38fda5e1-a321-44ed-83b5-84b8d1ac0adb",
-      "configId": "6d258878-f8fa-4763-8a84-5d2316c15650",
-      "timestamp": "2025-09-06T03:05:54.678Z",
+      "id": "bda84033-9c97-403f-a478-df9a30235dad",
+      "configId": "4ccd8253-0ddb-4dca-bb57-fd4bc336e2dd",
+      "timestamp": "2025-09-06T03:38:21.716Z",
       "status": "success",
-      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-38fda5e1-a321-44ed-83b5-84b8d1ac0adb.html",
-      "reportUrl": "/reports/report-38fda5e1-a321-44ed-83b5-84b8d1ac0adb.html"
+      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-bda84033-9c97-403f-a478-df9a30235dad.html",
+      "reportUrl": "/reports/report-bda84033-9c97-403f-a478-df9a30235dad.html"
+    },
+    {
+      "id": "179a65f1-dbf1-47e1-badd-c2e7b986db26",
+      "configId": "39575c56-da37-469e-ba7b-33de223d03f7",
+      "timestamp": "2025-09-06T03:38:54.524Z",
+      "status": "success",
+      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-179a65f1-dbf1-47e1-badd-c2e7b986db26.html",
+      "reportUrl": "/reports/report-179a65f1-dbf1-47e1-badd-c2e7b986db26.html"
+    },
+    {
+      "id": "d9f21a62-0868-44b0-a367-86aba16c841f",
+      "configId": "324d62c2-8134-43df-9985-8dd5c547a45c",
+      "timestamp": "2025-09-06T03:39:20.768Z",
+      "status": "success",
+      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-d9f21a62-0868-44b0-a367-86aba16c841f.html",
+      "reportUrl": "/reports/report-d9f21a62-0868-44b0-a367-86aba16c841f.html"
     }
   ]
 }

@@ -195,6 +195,10 @@ function generateCustomizedReport(data: Record<string, unknown>[], summary: stri
         .card h2{margin:0 0 12px 0;font-size:18px}
         .prose{color:#e5e7eb;font-size:14px}
         .prose p{margin:.6em 0}
+        .prose h3{color:#cbd5e1;font-size:16px;margin:1em 0 .5em 0;font-weight:700}
+        .prose ul{margin:.8em 0;padding-left:1.2em}
+        .prose li{margin:.3em 0}
+        .prose strong{color:#f8fafc;font-weight:600}
         .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
         .chip{background:var(--chip);border:1px solid var(--border);padding:6px 10px;border-radius:999px;color:#94a3b8;font-size:12px}
         .charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -239,7 +243,7 @@ function generateCustomizedReport(data: Record<string, unknown>[], summary: stri
         <article class="card">
             <h2>Executive Summary</h2>
             <div class="prose" id="exec-summary">
-                <div style="white-space: pre-line;">${summary}</div>
+                ${summary}
             </div>
             <div class="note">Report customized for ${config.platform.toUpperCase()} ${config.level} level with ${config.metrics.length} selected metrics.</div>
         </article>

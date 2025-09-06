@@ -185,7 +185,8 @@ const Dashboard = () => {
 
       const result = await response.json();
       
-      // Refresh scheduler status to get latest error/status info
+      // Small delay to ensure file has been written, then refresh scheduler status
+      await new Promise(resolve => setTimeout(resolve, 100));
       await fetchSchedulerStatus();
 
       setIsRunning(false);

@@ -114,12 +114,12 @@ You are a digital marketing analyst. Analyze this ${config.platform.toUpperCase(
 **Sample Data:**
 ${JSON.stringify(sampleData, null, 2)}
 
-Please provide:
+Please provide a well-structured analysis with:
 1. Performance summary with key insights
 2. Notable trends or patterns
 3. 2-3 actionable recommendations for optimization
 
-Keep the response concise (under 200 words) and focus on actionable insights.`;
+IMPORTANT: Format your response as clean HTML without markdown. Use <h3> for section headers, <p> for paragraphs, <strong> for emphasis, and <ul><li> for lists. Do not use ### headers or ** bold markdown formatting. Keep the response concise (under 200 words) and focus on actionable insights.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

@@ -335,6 +335,7 @@ class ReportScheduler {
     }
 
     this.updateStatus();
+    await this.saveConfig(); // Save the updated status to file
     return run;
   }
 

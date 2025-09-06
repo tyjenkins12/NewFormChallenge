@@ -3,7 +3,7 @@ import ReportScheduler from '@/lib/scheduler';
 
 export async function POST() {
   try {
-    const scheduler = ReportScheduler.getInstance();
+    const scheduler = await ReportScheduler.getInstanceAsync();
     const run = await scheduler.runReport();
     
     return NextResponse.json({ 
