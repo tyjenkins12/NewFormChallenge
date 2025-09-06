@@ -28,30 +28,23 @@
       "enabled": false,
       "accelerated": false
     },
-    "id": "9c6623bf-5496-4ccb-aedb-aefff5254b94"
+    "id": "4e895aee-83b8-4ae0-b39b-9bd86acae133"
   },
   "status": {
     "isRunning": false,
-    "lastRun": "2025-09-06T20:09:45.598Z",
-    "reportPath": "/reports/report-2fb43293-0cf3-491a-b70c-755fe31af780.html",
-    "pdfPath": "/reports/report-2fb43293-0cf3-491a-b70c-755fe31af780.pdf"
+    "lastRun": "2025-09-06T20:18:12.175Z",
+    "reportPath": "/reports/report-3731ae1d-11a4-4f9a-a388-39800e175f84.html",
+    "pdfPath": "/reports/report-3731ae1d-11a4-4f9a-a388-39800e175f84.pdf"
   },
   "reportRuns": [
     {
-      "id": "58864ae3-8551-4747-a241-af60c2cffe8f",
-      "configId": "1159d95f-8dd6-4110-b5d2-17d90928b8c3",
-      "timestamp": "2025-09-06T20:09:06.796Z",
-      "status": "error",
-      "error": "No data available for meta adset level with last30 date range. Try 'campaign' level or 'last30' date range for better data availability."
-    },
-    {
-      "id": "2fb43293-0cf3-491a-b70c-755fe31af780",
-      "configId": "9c6623bf-5496-4ccb-aedb-aefff5254b94",
-      "timestamp": "2025-09-06T20:09:21.578Z",
+      "id": "3731ae1d-11a4-4f9a-a388-39800e175f84",
+      "configId": "4e895aee-83b8-4ae0-b39b-9bd86acae133",
+      "timestamp": "2025-09-06T20:17:48.574Z",
       "status": "success",
-      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-2fb43293-0cf3-491a-b70c-755fe31af780.html",
-      "reportUrl": "/reports/report-2fb43293-0cf3-491a-b70c-755fe31af780.html",
-      "pdfUrl": "/reports/report-2fb43293-0cf3-491a-b70c-755fe31af780.pdf"
+      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-3731ae1d-11a4-4f9a-a388-39800e175f84.html",
+      "reportUrl": "/reports/report-3731ae1d-11a4-4f9a-a388-39800e175f84.html",
+      "pdfUrl": "/reports/report-3731ae1d-11a4-4f9a-a388-39800e175f84.pdf"
     }
   ]
 }
