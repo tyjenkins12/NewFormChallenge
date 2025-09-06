@@ -2,9 +2,9 @@
   "config": {
     "platform": "meta",
     "metrics": [
-      "clicks",
       "spend",
-      "cpc"
+      "clicks",
+      "impressions"
     ],
     "level": "adset",
     "breakdowns": [
@@ -13,42 +13,38 @@
     "dimensions": [],
     "dateRangeEnum": "last30",
     "cadence": "hourly",
-    "delivery": "link",
-    "email": "",
+    "delivery": "email",
+    "email": "tyjen1218@gmail.com",
     "timeIncrement": "7",
     "reportType": "BASIC",
-    "id": "324d62c2-8134-43df-9985-8dd5c547a45c"
+    "demoMode": {
+      "enabled": true,
+      "accelerated": true
+    },
+    "id": "76dbd01b-7d68-4164-91af-39eae29c9e5a"
   },
   "status": {
     "isRunning": true,
-    "nextRun": "2025-09-06T04:39:28.953Z",
-    "lastRun": "2025-09-06T03:39:28.953Z",
-    "reportPath": "/reports/report-d9f21a62-0868-44b0-a367-86aba16c841f.html"
+    "nextRun": "2025-09-06T16:03:34.723Z",
+    "lastRun": "2025-09-06T16:02:34.720Z",
+    "reportPath": "/reports/report-74ac14e0-f3cc-4886-a039-6961b6485260.html"
   },
   "reportRuns": [
     {
-      "id": "bda84033-9c97-403f-a478-df9a30235dad",
-      "configId": "4ccd8253-0ddb-4dca-bb57-fd4bc336e2dd",
-      "timestamp": "2025-09-06T03:38:21.716Z",
+      "id": "92caf6bf-e799-4823-993d-afa750edb9f2",
+      "configId": "76dbd01b-7d68-4164-91af-39eae29c9e5a",
+      "timestamp": "2025-09-06T16:01:18.928Z",
       "status": "success",
-      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-bda84033-9c97-403f-a478-df9a30235dad.html",
-      "reportUrl": "/reports/report-bda84033-9c97-403f-a478-df9a30235dad.html"
+      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-92caf6bf-e799-4823-993d-afa750edb9f2.html",
+      "reportUrl": "/reports/report-92caf6bf-e799-4823-993d-afa750edb9f2.html"
     },
     {
-      "id": "179a65f1-dbf1-47e1-badd-c2e7b986db26",
-      "configId": "39575c56-da37-469e-ba7b-33de223d03f7",
-      "timestamp": "2025-09-06T03:38:54.524Z",
+      "id": "74ac14e0-f3cc-4886-a039-6961b6485260",
+      "configId": "76dbd01b-7d68-4164-91af-39eae29c9e5a",
+      "timestamp": "2025-09-06T16:02:21.542Z",
       "status": "success",
-      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-179a65f1-dbf1-47e1-badd-c2e7b986db26.html",
-      "reportUrl": "/reports/report-179a65f1-dbf1-47e1-badd-c2e7b986db26.html"
-    },
-    {
-      "id": "d9f21a62-0868-44b0-a367-86aba16c841f",
-      "configId": "324d62c2-8134-43df-9985-8dd5c547a45c",
-      "timestamp": "2025-09-06T03:39:20.768Z",
-      "status": "success",
-      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-d9f21a62-0868-44b0-a367-86aba16c841f.html",
-      "reportUrl": "/reports/report-d9f21a62-0868-44b0-a367-86aba16c841f.html"
+      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-74ac14e0-f3cc-4886-a039-6961b6485260.html",
+      "reportUrl": "/reports/report-74ac14e0-f3cc-4886-a039-6961b6485260.html"
     }
   ]
 }

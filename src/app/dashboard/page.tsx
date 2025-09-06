@@ -31,6 +31,9 @@ const Dashboard = () => {
   const [reportConfig, setReportConfig] = useState<ReportConfig | null>(null);
   const [schedulerStatus, setSchedulerStatus] = useState<any>(null);
   const [lastRun, setLastRun] = useState<any>(null);
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
+  const [forceRender, setForceRender] = useState(0);
+  const [pageRefreshTimeout, setPageRefreshTimeout] = useState<NodeJS.Timeout | null>(null);
   
   // Load configuration from localStorage and fetch scheduler status
   useEffect(() => {
@@ -50,17 +53,130 @@ const Dashboard = () => {
     fetchSchedulerStatus();
   }, []);
 
-  const fetchSchedulerStatus = async () => {
+  // Auto-refresh effect when scheduler is running
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | null = null;
+
+    // Enable auto-refresh if scheduler is running and not manual
+    const shouldAutoRefresh = schedulerStatus?.status?.isRunning && 
+                             reportConfig?.cadence !== 'manual' &&
+                             !!reportConfig?.cadence;
+
+    console.log('🔄 Auto-refresh check:', {
+      shouldAutoRefresh,
+      isRunning: schedulerStatus?.status?.isRunning,
+      cadence: reportConfig?.cadence,
+      schedulerStatus: !!schedulerStatus,
+      reportConfig: !!reportConfig
+    });
+
+    if (shouldAutoRefresh) {
+      console.log('🔄 Auto-refresh enabled - scheduler is running');
+      setAutoRefreshEnabled(true);
+      
+      // Determine refresh interval based on cadence and demo mode
+      const isAccelerated = reportConfig?.demoMode?.enabled && reportConfig?.demoMode?.accelerated;
+      let refreshInterval: number;
+      
+      if (isAccelerated) {
+        // In demo mode, refresh every 10 seconds to catch quick updates
+        refreshInterval = 10 * 1000;
+      } else {
+        // Normal mode: refresh every 2 minutes for regular updates
+        refreshInterval = 2 * 60 * 1000;
+      }
+
+      intervalId = setInterval(() => {
+        console.log(`🔄 Auto-refreshing dashboard (${isAccelerated ? 'demo mode' : 'normal mode'})`);
+        fetchSchedulerStatus(true); // Enable notifications for auto-refresh
+      }, refreshInterval);
+    } else {
+      console.log('⏸️ Auto-refresh disabled - scheduler not running or manual cadence');
+      setAutoRefreshEnabled(false);
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+        console.log('🛑 Auto-refresh stopped');
+      }
+    };
+  }, [schedulerStatus?.status?.isRunning, reportConfig?.cadence, reportConfig?.demoMode]);
+
+  // Schedule page refresh after report generation
+  useEffect(() => {
+    // Clear any existing timeout
+    if (pageRefreshTimeout) {
+      clearTimeout(pageRefreshTimeout);
+      setPageRefreshTimeout(null);
+    }
+
+    // Only schedule refresh if we have a next run time and scheduler is running
+    if (schedulerStatus?.status?.nextRun && 
+        schedulerStatus?.status?.isRunning && 
+        reportConfig?.cadence !== 'manual') {
+      
+      const nextRun = new Date(schedulerStatus.status.nextRun);
+      const now = new Date();
+      const msUntilNextRun = nextRun.getTime() - now.getTime();
+      
+      if (msUntilNextRun > 0) {
+        // Add 15 seconds offset to account for report generation time
+        const msUntilRefresh = msUntilNextRun + 15000;
+        
+        console.log(`🔄 Scheduling page refresh in ${Math.round(msUntilRefresh / 1000)} seconds after next report`);
+        
+        const timeoutId = setTimeout(() => {
+          console.log('🔄 Force refreshing page after report generation');
+          window.location.reload();
+        }, msUntilRefresh);
+        
+        setPageRefreshTimeout(timeoutId);
+      }
+    }
+
+    return () => {
+      if (pageRefreshTimeout) {
+        clearTimeout(pageRefreshTimeout);
+      }
+    };
+  }, [schedulerStatus?.status?.nextRun, schedulerStatus?.status?.isRunning, reportConfig?.cadence]);
+
+  const fetchSchedulerStatus = async (showNotification = false) => {
     try {
       const response = await fetch('/api/scheduler/status');
       if (response.ok) {
         const status = await response.json();
+        
+        // Check if there's a new report since last check
+        const previousReportPath = schedulerStatus?.status?.reportPath;
+        const currentReportPath = status.status?.reportPath;
+        const hasNewReport = currentReportPath && currentReportPath !== previousReportPath;
+        
         console.log('🔍 Dashboard received status:', {
           nextRun: status.status?.nextRun,
           isRunning: status.status?.isRunning,
-          configCadence: status.config?.cadence
+          configCadence: status.config?.cadence,
+          reportPath: status.status?.reportPath,
+          fullStatus: status.status,
+          hasNewReport,
+          previousReportPath,
+          currentReportPath
         });
+        
         setSchedulerStatus(status);
+        
+        // Force a re-render to ensure the component updates
+        setForceRender(prev => prev + 1);
+        
+        // Show notification for new report (but not on initial load)
+        if (hasNewReport && showNotification && schedulerStatus) {
+          toast({
+            title: "New Report Generated! 📊",
+            description: "Your scheduled report has been created and is ready to view.",
+          });
+          console.log('📊 New report detected:', currentReportPath);
+        }
         
         // Simulate last run data based on scheduler status
         if (status.status?.lastRun) {
@@ -125,13 +241,15 @@ const Dashboard = () => {
     progress: getScheduleProgress()
   };
 
-  // Debug logging for nextRun
+  // Debug logging for nextRun and latest report
   console.log('🔍 Dashboard nextRun calculation:', {
     hasNextRun: !!schedulerStatus?.status?.nextRun,
     nextRunValue: schedulerStatus?.status?.nextRun,
     scheduled: nextRun.scheduled,
     countdown: nextRun.countdown,
-    cadence: reportConfig?.cadence
+    cadence: reportConfig?.cadence,
+    hasReportPath: !!schedulerStatus?.status?.reportPath,
+    reportPath: schedulerStatus?.status?.reportPath
   });
 
   // Helper function to calculate schedule progress
@@ -274,12 +392,28 @@ const Dashboard = () => {
               </div>
             </div>
             
-            <div className="flex gap-3">
+            <div className="flex gap-3 items-center">
+              {autoRefreshEnabled && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-3 py-1 rounded-full">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  Auto-refresh active
+                </div>
+              )}
               <Button variant="outline" asChild>
                 <Link href="/">
                   <Settings className="h-4 w-4 mr-2" />
                   Edit Config
                 </Link>
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => {
+                  console.log('🔄 Manual refresh triggered');
+                  fetchSchedulerStatus();
+                }}
+                size="sm"
+              >
+                🔄 Refresh
               </Button>
               <Button 
                 onClick={handleRunNow} 
@@ -515,8 +649,17 @@ const Dashboard = () => {
           </Card>
 
           {/* Latest Report - Show when there's a report available */}
-          {schedulerStatus?.status?.reportPath && (
-            <Card className="shadow-card mt-2">
+          {(() => {
+            const hasReportPath = !!schedulerStatus?.status?.reportPath;
+            console.log('🔍 Latest Report condition:', {
+              hasReportPath,
+              reportPath: schedulerStatus?.status?.reportPath,
+              schedulerStatus: !!schedulerStatus,
+              status: !!schedulerStatus?.status
+            });
+            return hasReportPath;
+          })() && (
+            <Card className="shadow-card mt-2" key={`${schedulerStatus?.status?.reportPath}-${forceRender}`}>
               <CardHeader>
                 <CardTitle>Latest Report</CardTitle>
               </CardHeader>

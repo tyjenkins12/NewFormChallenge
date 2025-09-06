@@ -121,8 +121,6 @@ export default function Configure() {
   const [demoMode, setDemoMode] = useState({
     enabled: false,
     accelerated: false,
-    simulateFailure: false,
-    bypassCache: false,
   });
 
   const [isValid, setIsValid] = useState(false);
@@ -234,6 +232,7 @@ export default function Configure() {
           email: config.email,
           timeIncrement: config.timeIncrement,
           reportType: config.reportType,
+          demoMode: demoMode,
         }),
       });
 
@@ -541,47 +540,23 @@ export default function Configure() {
                     enabled: checked,
                     // Reset sub-options when disabling demo mode
                     accelerated: checked ? prev.accelerated : false,
-                    simulateFailure: checked ? prev.simulateFailure : false,
-                    bypassCache: checked ? prev.bypassCache : false,
                   }))}
                 />
               </div>
               
               {demoMode.enabled && (
-                <>
-                  <div className="border-t pt-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label>Accelerated Schedule</Label>
-                        <p className="text-sm text-muted-foreground">Hourly = 30s, Daily = 120s</p>
-                      </div>
-                      <Switch
-                        checked={demoMode.accelerated}
-                        onCheckedChange={(checked) => setDemoMode(prev => ({ ...prev, accelerated: checked }))}
-                      />
-                    </div>
-                  </div>
+                <div className="border-t pt-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Simulate LLM Failure</Label>
-                      <p className="text-sm text-muted-foreground">Test error handling</p>
+                      <Label>Accelerated Schedule</Label>
+                      <p className="text-sm text-muted-foreground">Hourly = 1min, Daily = 2min for testing</p>
                     </div>
                     <Switch
-                      checked={demoMode.simulateFailure}
-                      onCheckedChange={(checked) => setDemoMode(prev => ({ ...prev, simulateFailure: checked }))}
+                      checked={demoMode.accelerated}
+                      onCheckedChange={(checked) => setDemoMode(prev => ({ ...prev, accelerated: checked }))}
                     />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>Bypass Cache</Label>
-                      <p className="text-sm text-muted-foreground">Force real API calls</p>
-                    </div>
-                    <Switch
-                      checked={demoMode.bypassCache}
-                      onCheckedChange={(checked) => setDemoMode(prev => ({ ...prev, bypassCache: checked }))}
-                    />
-                  </div>
-                </>
+                </div>
               )}
             </CardContent>
           </Card>

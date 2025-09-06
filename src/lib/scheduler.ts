@@ -1,7 +1,7 @@
 import * as cron from 'node-cron';
 import { ReportConfig, ReportRun, SchedulerStatus } from '@/types';
 import { fetchAdData, generateLLMSummary } from './api';
-import { generateReport } from './report-generator';
+import { generateReport, generateEmailReport } from './report-generator';
 import { sendEmail } from './email';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs/promises';
@@ -15,6 +15,8 @@ class ReportScheduler {
   private reportRuns: ReportRun[] = [];
   private configFilePath = path.join(process.cwd(), '.scheduler-config.json');
   private scheduledTimeoutId: NodeJS.Timeout | null = null;
+  private isGeneratingReport: boolean = false;
+  private lockFilePath = path.join(process.cwd(), '.report-generation.lock');
 
   static getInstance(): ReportScheduler {
     if (!ReportScheduler.instance) {
@@ -28,6 +30,9 @@ class ReportScheduler {
       ReportScheduler.instance = new ReportScheduler();
       // Initialize async on first creation
       await ReportScheduler.instance.initializeScheduler();
+    } else {
+      // For existing instances, just reload config to get latest state
+      await ReportScheduler.instance.loadConfig();
     }
     return ReportScheduler.instance;
   }
@@ -83,12 +88,16 @@ class ReportScheduler {
     
     console.log('🔍 After loadConfig, config is:', this.config?.cadence, this.config?.platform);
     
-    // If we have a config, restore the scheduled task
-    if (this.config && this.config.cadence !== 'manual') {
+    // If we have a config, restore the scheduled task (only if not already scheduled)
+    if (this.config && this.config.cadence !== 'manual' && !this.scheduledTimeoutId) {
       console.log(`🔄 Scheduler: Restoring ${this.config.cadence} schedule for ${this.config.platform}`);
       await this.scheduleNextRunFromNow();
     } else {
-      console.log('📋 Scheduler: No existing configuration to restore');
+      if (this.scheduledTimeoutId) {
+        console.log('📋 Scheduler: Schedule already active, skipping restore');
+      } else {
+        console.log('📋 Scheduler: No existing configuration to restore');
+      }
     }
   }
 
@@ -186,18 +195,39 @@ class ReportScheduler {
     const now = new Date();
     const nextRun = new Date(now);
     
+    // Check if demo mode accelerated scheduling is enabled
+    const isAccelerated = config.demoMode?.enabled && config.demoMode?.accelerated;
+    
     // Calculate next run time based on current time + interval
-    switch (config.cadence) {
-      case 'hourly':
-        nextRun.setHours(nextRun.getHours() + 1);
-        break;
-      case '12hours':
-        nextRun.setHours(nextRun.getHours() + 12);
-        break;
-      case 'daily':
-        nextRun.setDate(nextRun.getDate() + 1);
-        // Keep the same time as when user configured it
-        break;
+    if (isAccelerated) {
+      // Accelerated demo mode: hourly = 1min, 12hours = 1.5min, daily = 2min
+      switch (config.cadence) {
+        case 'hourly':
+          nextRun.setMinutes(nextRun.getMinutes() + 1);
+          break;
+        case '12hours':
+          nextRun.setMinutes(nextRun.getMinutes() + 1);
+          nextRun.setSeconds(nextRun.getSeconds() + 30);
+          break;
+        case 'daily':
+          nextRun.setMinutes(nextRun.getMinutes() + 2);
+          break;
+      }
+      console.log('⚡ Demo mode accelerated schedule enabled');
+    } else {
+      // Normal scheduling
+      switch (config.cadence) {
+        case 'hourly':
+          nextRun.setHours(nextRun.getHours() + 1);
+          break;
+        case '12hours':
+          nextRun.setHours(nextRun.getHours() + 12);
+          break;
+        case 'daily':
+          nextRun.setDate(nextRun.getDate() + 1);
+          // Keep the same time as when user configured it
+          break;
+      }
     }
     
     this.status.nextRun = nextRun;
@@ -205,17 +235,25 @@ class ReportScheduler {
     // Schedule a one-time timeout for the next run
     const msUntilNext = nextRun.getTime() - now.getTime();
     
+    const timeUnit = isAccelerated ? 'seconds' : 'minutes';
+    const timeValue = isAccelerated ? Math.round(msUntilNext / 1000) : Math.round(msUntilNext / 1000 / 60);
+    
     console.log(`⏰ Scheduler: Next ${config.cadence} run scheduled for: ${nextRun.toLocaleString()}`);
-    console.log(`🕐 Scheduler: Will run in ${Math.round(msUntilNext / 1000 / 60)} minutes (${msUntilNext}ms)`);
+    console.log(`🕐 Scheduler: Will run in ${timeValue} ${timeUnit} (${msUntilNext}ms)${isAccelerated ? ' [DEMO MODE]' : ''}`);
     
     // Clear any existing timeout
     if (this.scheduledTimeoutId) {
       clearTimeout(this.scheduledTimeoutId);
-      console.log('🗑️ Cleared existing timeout');
+      console.log(`🗑️ Cleared existing timeout ID: ${this.scheduledTimeoutId}`);
+      this.scheduledTimeoutId = null;
     }
     
     this.scheduledTimeoutId = setTimeout(() => {
-      console.log('⚡ Scheduled timeout triggered - running report');
+      console.log(`⚡ Scheduled timeout triggered (ID: ${this.scheduledTimeoutId}) - running report`);
+      
+      // Clear the timeout ID immediately to prevent duplicates
+      this.scheduledTimeoutId = null;
+      
       this.runReport().then(async () => {
         console.log('📅 Report completed, scheduling next run');
         // After running, schedule the next one using the same logic
@@ -253,6 +291,27 @@ class ReportScheduler {
   async runReport(): Promise<ReportRun> {
     console.log('🚀 Scheduler: Running report...');
     
+    // Prevent multiple reports from running simultaneously using file-based lock
+    try {
+      // Check if lock file exists
+      await fs.access(this.lockFilePath);
+      console.log('⏸️ Report generation already in progress (lock file exists), skipping...');
+      throw new Error('Report generation already in progress');
+    } catch (error) {
+      // Lock file doesn't exist, we can proceed
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+        throw error;
+      }
+    }
+    
+    // Create lock file
+    await fs.writeFile(this.lockFilePath, `${Date.now()}-${process.pid}`);
+    this.isGeneratingReport = true;
+    console.log('🔒 Report generation lock acquired (file created)');
+    
+    // Preserve the previous report path during generation
+    const previousReportPath = this.status.reportPath;
+    
     // Try to load config from file if not in memory
     if (!this.config) {
       console.log('📂 Scheduler: No config in memory, attempting to load from file...');
@@ -279,6 +338,12 @@ class ReportScheduler {
 
     this.reportRuns.push(run);
     this.status.lastError = undefined;
+    
+    // Keep the previous report path until new one is ready
+    if (previousReportPath) {
+      this.status.reportPath = previousReportPath;
+      console.log('📋 Preserving previous report path during generation:', previousReportPath);
+    }
 
     try {
       // Fetch data from API
@@ -288,7 +353,7 @@ class ReportScheduler {
       // Generate LLM summary
       const summary = await generateLLMSummary(data, this.config);
       
-      // Generate HTML report
+      // Generate HTML report (always generate the full version for file storage)
       const reportHtml = await generateReport(data, summary, this.config);
       
       // Save report to file system
@@ -315,27 +380,37 @@ class ReportScheduler {
 
       // Handle delivery
       if (this.config.delivery === 'email' && this.config.email) {
-        await sendEmail(this.config.email, reportHtml, `${this.config.platform.toUpperCase()} Report`);
+        // Generate email-optimized version for sending
+        const emailHtml = await generateEmailReport(data, summary, this.config);
+        await sendEmail(this.config.email, emailHtml, `${this.config.platform.toUpperCase()} Report`);
+        console.log('📧 Sent email-optimized report version');
       }
 
       this.status.lastRun = new Date();
       this.status.reportPath = run.reportUrl;
 
-      // For scheduled cadences, calculate next run from this manual run time
-      if (this.config.cadence !== 'manual') {
-        this.calculateNextRunFromLastRun();
-        await this.rescheduleFromManualRun();
-      }
+      // For manual runs only, we don't reschedule automatically
+      // Scheduled runs are handled by the timeout callback
 
     } catch (error) {
       run.status = 'error';
       run.error = error instanceof Error ? error.message : 'Unknown error';
       this.status.lastError = run.error;
       console.error('Report generation failed:', error);
+    } finally {
+      // Always release the lock, even on errors
+      try {
+        await fs.unlink(this.lockFilePath);
+        console.log('🔓 Report generation lock released (file deleted)');
+      } catch (error) {
+        console.log('⚠️ Could not delete lock file (might not exist)');
+      }
+      this.isGeneratingReport = false;
     }
 
     this.updateStatus();
     await this.saveConfig(); // Save the updated status to file
+    
     return run;
   }
 
@@ -405,6 +480,12 @@ class ReportScheduler {
   }
 
   getStatus(): SchedulerStatus {
+    console.log('🔍 Scheduler getStatus called, current status:', {
+      isRunning: this.status.isRunning,
+      reportPath: this.status.reportPath,
+      lastRun: this.status.lastRun,
+      nextRun: this.status.nextRun
+    });
     return { ...this.status };
   }
 

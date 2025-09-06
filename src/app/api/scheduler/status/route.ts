@@ -10,7 +10,9 @@ export async function GET() {
     console.log('📊 Status API returning:', {
       nextRun: status.nextRun,
       isRunning: status.isRunning,
-      configCadence: config?.cadence
+      configCadence: config?.cadence,
+      reportPath: status.reportPath,
+      fullStatus: status
     });
     
     return NextResponse.json({

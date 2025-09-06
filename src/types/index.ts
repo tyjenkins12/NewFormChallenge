@@ -11,6 +11,10 @@ export interface ReportConfig {
   email?: string;
   timeIncrement?: string; // For Meta
   reportType?: 'BASIC' | 'AUDIENCE'; // For TikTok
+  demoMode?: {
+    enabled: boolean;
+    accelerated: boolean;
+  };
 }
 
 export interface ReportRun {
