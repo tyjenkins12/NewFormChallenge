@@ -11,20 +11,68 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
-import { Play, Save, Eye, Settings } from "lucide-react";
+import { Play, Save, Eye, Settings, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
-// Mock data for preview
-const mockData = [
-  { name: "Mon", impressions: 12500, clicks: 850, conversions: 42 },
-  { name: "Tue", impressions: 15200, clicks: 1020, conversions: 38 },
-  { name: "Wed", impressions: 18600, clicks: 1250, conversions: 55 },
-  { name: "Thu", impressions: 14800, clicks: 980, conversions: 47 },
-  { name: "Fri", impressions: 21200, clicks: 1380, conversions: 62 },
-  { name: "Sat", impressions: 19800, clicks: 1150, conversions: 48 },
-  { name: "Sun", impressions: 16400, clicks: 920, conversions: 39 },
-];
+// Mock data generator for different metrics
+const generateMockValue = (metric: string, day: number) => {
+  const seed = day * 137; // Simple seed for consistent but varied data
+  const random = (Math.sin(seed) + 1) / 2; // 0-1 range
+  
+  const metricRanges: Record<string, { min: number, max: number, format: (n: number) => string }> = {
+    impressions: { min: 8000, max: 25000, format: (n) => Math.round(n).toLocaleString() },
+    clicks: { min: 400, max: 1500, format: (n) => Math.round(n).toLocaleString() },
+    spend: { min: 150, max: 800, format: (n) => `$${n.toFixed(2)}` },
+    conversions: { min: 20, max: 70, format: (n) => Math.round(n).toString() },
+    ctr: { min: 2.1, max: 8.5, format: (n) => `${n.toFixed(2)}%` },
+    cpc: { min: 0.15, max: 2.50, format: (n) => `$${n.toFixed(2)}` },
+    reach: { min: 5000, max: 18000, format: (n) => Math.round(n).toLocaleString() },
+    frequency: { min: 1.2, max: 3.8, format: (n) => n.toFixed(2) },
+    cost_per_conversion: { min: 8, max: 35, format: (n) => `$${n.toFixed(2)}` },
+    conversion_rate: { min: 1.2, max: 6.8, format: (n) => `${n.toFixed(2)}%` },
+    actions: { min: 25, max: 180, format: (n) => n.toFixed(2) },
+    cost_per_action_type: { min: 0.85, max: 4.25, format: (n) => `$${n.toFixed(2)}` }
+  };
+  
+  const range = metricRanges[metric] || { min: 100, max: 1000, format: (n) => n.toString() };
+  return range.min + (range.max - range.min) * random;
+};
+
+// Generate mock data based on selected metrics
+const generateMockData = (selectedMetrics: string[]) => {
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  
+  return days.map((day, index) => {
+    const dayData: Record<string, any> = { name: day };
+    
+    selectedMetrics.forEach(metric => {
+      dayData[metric] = generateMockValue(metric, index);
+    });
+    
+    return dayData;
+  });
+};
+
+// Get metric display info
+const getMetricDisplay = (metric: string) => {
+  const displays: Record<string, { label: string, format: (n: number) => string, color: string }> = {
+    impressions: { label: "Impressions", format: (n) => Math.round(n).toLocaleString(), color: "text-chart-1" },
+    clicks: { label: "Clicks", format: (n) => Math.round(n).toLocaleString(), color: "text-chart-2" },
+    spend: { label: "Spend", format: (n) => `$${n.toFixed(2)}`, color: "text-chart-3" },
+    conversions: { label: "Conversions", format: (n) => Math.round(n).toString(), color: "text-chart-4" },
+    ctr: { label: "CTR", format: (n) => `${n.toFixed(2)}%`, color: "text-chart-1" },
+    cpc: { label: "CPC", format: (n) => `$${n.toFixed(2)}`, color: "text-chart-2" },
+    reach: { label: "Reach", format: (n) => Math.round(n).toLocaleString(), color: "text-chart-3" },
+    frequency: { label: "Frequency", format: (n) => n.toFixed(2), color: "text-chart-4" },
+    cost_per_conversion: { label: "Cost/Conv", format: (n) => `$${n.toFixed(2)}`, color: "text-chart-1" },
+    conversion_rate: { label: "Conv Rate", format: (n) => `${n.toFixed(2)}%`, color: "text-chart-2" },
+    actions: { label: "Actions", format: (n) => n.toFixed(2), color: "text-chart-3" },
+    cost_per_action_type: { label: "Cost/Action", format: (n) => `$${n.toFixed(2)}`, color: "text-chart-4" }
+  };
+  
+  return displays[metric] || { label: metric.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), format: (n) => n.toString(), color: "text-chart-1" };
+};
 
 const platforms = [
   { value: "meta", label: "Meta (Facebook & Instagram)" },
@@ -78,6 +126,7 @@ export default function Configure() {
   });
 
   const [isValid, setIsValid] = useState(false);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
   // Load or initialize configuration on component mount
   useEffect(() => {
@@ -146,6 +195,23 @@ export default function Configure() {
     console.log("Saving and starting configuration:", config, demoMode);
     
     try {
+      setIsGeneratingReport(true);
+      
+      // Show different messages for manual vs scheduled cadences
+      const isManual = config.cadence === 'manual';
+      
+      if (isManual) {
+        toast({
+          title: "Generating Report",
+          description: "Creating your report now. This may take a few minutes...",
+        });
+      } else {
+        toast({
+          title: "Starting Report Schedule",
+          description: `Scheduling ${config.cadence} reports. Redirecting to dashboard...`,
+        });
+      }
+      
       // Save to localStorage for UI persistence
       const configData = { config, demoMode, savedAt: new Date().toISOString(), started: true };
       localStorage.setItem('reportConfig', JSON.stringify(configData));
@@ -176,15 +242,23 @@ export default function Configure() {
         throw new Error(error.error || 'Failed to start scheduler');
       }
 
-      toast({
-        title: "Configuration Saved & Started",
-        description: "Your report is now configured and running. Redirecting to dashboard...",
-      });
+      if (isManual) {
+        toast({
+          title: "Report Generated Successfully",
+          description: "Your report has been created and is ready to view. Redirecting to dashboard...",
+        });
+      } else {
+        toast({
+          title: "Report Schedule Started",
+          description: "Your reports are now scheduled and running. Redirecting to dashboard...",
+        });
+      }
       
       // Navigate to dashboard after a short delay to show the toast
       setTimeout(() => {
         router.push('/dashboard');
-      }, 1500);
+      }, 2000);
+      
     } catch (error) {
       console.error('Failed to save and start:', error);
       toast({
@@ -192,6 +266,8 @@ export default function Configure() {
         description: error instanceof Error ? error.message : "Failed to start report configuration",
         variant: "destructive",
       });
+    } finally {
+      setIsGeneratingReport(false);
     }
   };
 
@@ -516,9 +592,18 @@ export default function Configure() {
               <Save className="h-4 w-4 mr-2" />
               Save
             </Button>
-            <Button disabled={!isValid} onClick={handleSaveAndStart}>
-              <Play className="h-4 w-4 mr-2" />
-              Save & Start
+            <Button disabled={!isValid || isGeneratingReport} onClick={handleSaveAndStart}>
+              {isGeneratingReport ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {config.cadence === 'manual' ? 'Generating Report...' : 'Starting Schedule...'}
+                </>
+              ) : (
+                <>
+                  <Play className="h-4 w-4 mr-2" />
+                  Save & Start
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -532,54 +617,92 @@ export default function Configure() {
             <h2 className="text-lg font-semibold">Live Preview</h2>
           </div>
 
-          {config.platform && config.metrics.length > 0 ? (
-            <div className="space-y-6">
-              {/* KPI Cards */}
-              <div className="grid grid-cols-2 gap-3">
-                <Card className="p-3">
-                  <div className="text-2xl font-bold text-chart-1">125.4K</div>
-                  <div className="text-xs text-muted-foreground">Total Impressions</div>
+          {config.platform && config.metrics.length > 0 ? (() => {
+            // Generate dynamic mock data based on selected metrics
+            const mockData = generateMockData(config.metrics);
+            const displayMetrics = config.metrics.slice(0, 4); // Show first 4 metrics in KPI cards
+            
+            // Calculate totals for KPI cards
+            const totals = displayMetrics.map(metric => {
+              const total = mockData.reduce((sum, day) => sum + day[metric], 0);
+              const display = getMetricDisplay(metric);
+              return {
+                metric,
+                total,
+                display
+              };
+            });
+
+            return (
+              <div className="space-y-6">
+                {/* Dynamic KPI Cards */}
+                <div className="grid grid-cols-2 gap-3">
+                  {totals.map(({ metric, total, display }, index) => (
+                    <Card key={metric} className="p-3">
+                      <div className={`text-2xl font-bold ${display.color}`}>
+                        {display.format(total)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Total {display.label}</div>
+                    </Card>
+                  ))}
+                  
+                  {/* Fill empty slots if less than 4 metrics */}
+                  {Array.from({ length: Math.max(0, 4 - displayMetrics.length) }).map((_, index) => (
+                    <Card key={`empty-${index}`} className="p-3 opacity-50">
+                      <div className="text-2xl font-bold text-muted-foreground">--</div>
+                      <div className="text-xs text-muted-foreground">Select metric</div>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Dynamic Chart */}
+                <Card className="p-4">
+                  <h3 className="text-sm font-medium mb-3">Performance Trend</h3>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <LineChart data={mockData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip 
+                        formatter={(value: any, name: string) => {
+                          const display = getMetricDisplay(name);
+                          return [display.format(Number(value)), display.label];
+                        }}
+                      />
+                      {config.metrics.slice(0, 3).map((metric, index) => { // Show first 3 metrics in chart
+                        const colors = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))'];
+                        return (
+                          <Line 
+                            key={metric}
+                            type="monotone" 
+                            dataKey={metric} 
+                            stroke={colors[index]} 
+                            strokeWidth={2}
+                            name={getMetricDisplay(metric).label}
+                          />
+                        );
+                      })}
+                    </LineChart>
+                  </ResponsiveContainer>
+                  {config.metrics.length === 0 && (
+                    <div className="flex items-center justify-center h-48 text-sm text-muted-foreground">
+                      Select metrics to see chart
+                    </div>
+                  )}
                 </Card>
-                <Card className="p-3">
-                  <div className="text-2xl font-bold text-chart-2">8.2K</div>
-                  <div className="text-xs text-muted-foreground">Total Clicks</div>
-                </Card>
-                <Card className="p-3">
-                  <div className="text-2xl font-bold text-chart-3">6.5%</div>
-                  <div className="text-xs text-muted-foreground">CTR</div>
-                </Card>
-                <Card className="p-3">
-                  <div className="text-2xl font-bold text-chart-4">331</div>
-                  <div className="text-xs text-muted-foreground">Conversions</div>
+
+                {/* AI Summary */}
+                <Card className="p-4">
+                  <h3 className="text-sm font-medium mb-2">AI Summary</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Performance shows strong engagement with Friday being the peak day. 
+                    CTR is above industry average at 6.5%. Consider increasing budget 
+                    allocation for weekends based on conversion patterns.
+                  </p>
                 </Card>
               </div>
-
-              {/* Sample Chart */}
-              <Card className="p-4">
-                <h3 className="text-sm font-medium mb-3">Performance Trend</h3>
-                <ResponsiveContainer width="100%" height={200}>
-                  <LineChart data={mockData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line type="monotone" dataKey="impressions" stroke="hsl(var(--chart-1))" strokeWidth={2} />
-                    <Line type="monotone" dataKey="clicks" stroke="hsl(var(--chart-2))" strokeWidth={2} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </Card>
-
-              {/* Summary */}
-              <Card className="p-4">
-                <h3 className="text-sm font-medium mb-2">AI Summary</h3>
-                <p className="text-sm text-muted-foreground">
-                  Performance shows strong engagement with Friday being the peak day. 
-                  CTR is above industry average at 6.5%. Consider increasing budget 
-                  allocation for weekends based on conversion patterns.
-                </p>
-              </Card>
-            </div>
-          ) : (
+            );
+          })() : (
             <div className="flex items-center justify-center h-64 text-center">
               <div>
                 <BarChart className="h-12 w-12 text-muted-foreground mx-auto mb-3" />

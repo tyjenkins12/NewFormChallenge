@@ -217,7 +217,11 @@ const Dashboard = () => {
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText("https://analytics-hub.example.com/report/abc123");
+    const reportUrl = schedulerStatus?.status?.reportPath 
+      ? `${window.location.origin}${schedulerStatus.status.reportPath}`
+      : "No report available";
+    
+    navigator.clipboard.writeText(reportUrl);
     toast({
       title: "Link Copied",
       description: "Report link has been copied to your clipboard.",
@@ -509,8 +513,8 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Report Actions - Only show for link delivery */}
-          {reportConfig?.delivery === "link" && (
+          {/* Latest Report - Show when there's a report available */}
+          {schedulerStatus?.status?.reportPath && (
             <Card className="shadow-card mt-2">
               <CardHeader>
                 <CardTitle>Latest Report</CardTitle>
@@ -518,21 +522,37 @@ const Dashboard = () => {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium">Analytics Report - Jan 15, 2024</p>
-                    <p className="text-sm text-muted-foreground">Generated from 1,247 records • 2.3s processing time</p>
+                    <p className="text-sm font-medium">
+                      {reportConfig?.platform?.toUpperCase()} Report - {lastRun?.timestamp || 'Recently generated'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Generated from {lastRun?.recordsProcessed?.toLocaleString() || '0'} records • {lastRun?.duration || 'Processing time'} • {reportConfig?.delivery === 'email' ? 'Sent via email' : 'Available via link'}
+                    </p>
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={handleCopyLink}>
-                      <Copy className="h-4 w-4 mr-2" />
-                      Copy Link
-                    </Button>
-                    <Button size="sm" asChild>
-                      <a href="https://analytics-hub.example.com/report/abc123" target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        Open Report
-                      </a>
-                    </Button>
-                  </div>
+                  {reportConfig?.delivery === "link" && (
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={handleCopyLink}>
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copy Link
+                      </Button>
+                      <Button size="sm" asChild>
+                        <a href={schedulerStatus.status.reportPath} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Open Report
+                        </a>
+                      </Button>
+                    </div>
+                  )}
+                  {reportConfig?.delivery === "email" && (
+                    <div className="flex gap-2">
+                      <Button size="sm" asChild>
+                        <a href={schedulerStatus.status.reportPath} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          View Report
+                        </a>
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

@@ -159,7 +159,14 @@ class ReportScheduler {
       // Pass config directly to avoid any race conditions
       await this.scheduleNextRunFromNow(config);
     } else {
-      console.log('📋 Scheduler: Manual mode - no cron scheduled');
+      console.log('📋 Scheduler: Manual mode - generating immediate report');
+      // For manual mode, generate a report immediately
+      try {
+        const report = await this.runReport();
+        console.log('✅ Manual report generated successfully:', report.id);
+      } catch (error) {
+        console.error('❌ Failed to generate manual report:', error);
+      }
     }
 
     this.updateStatus();

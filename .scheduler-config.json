@@ -4,24 +4,35 @@
     "metrics": [
       "spend",
       "clicks",
-      "frequency"
+      "impressions"
     ],
-    "level": "account",
+    "level": "campaign",
     "breakdowns": [
       "age"
     ],
     "dimensions": [],
     "dateRangeEnum": "last30",
     "cadence": "hourly",
-    "delivery": "email",
-    "email": "tyjen1218@gmail.com",
+    "delivery": "link",
+    "email": "",
     "timeIncrement": "7",
     "reportType": "BASIC",
-    "id": "d9c79a41-e272-4adf-93e6-62462faeeefe"
+    "id": "a03bedb7-b4b7-4603-b781-ee09d4043f43"
   },
   "status": {
     "isRunning": true,
-    "nextRun": "2025-09-06T03:43:23.691Z"
+    "lastRun": "2025-09-06T03:06:00.753Z",
+    "reportPath": "/reports/report-38fda5e1-a321-44ed-83b5-84b8d1ac0adb.html",
+    "nextRun": "2025-09-06T04:26:35.265Z"
   },
-  "reportRuns": []
+  "reportRuns": [
+    {
+      "id": "38fda5e1-a321-44ed-83b5-84b8d1ac0adb",
+      "configId": "6d258878-f8fa-4763-8a84-5d2316c15650",
+      "timestamp": "2025-09-06T03:05:54.678Z",
+      "status": "success",
+      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-38fda5e1-a321-44ed-83b5-84b8d1ac0adb.html",
+      "reportUrl": "/reports/report-38fda5e1-a321-44ed-83b5-84b8d1ac0adb.html"
+    }
+  ]
 }
