@@ -263,7 +263,7 @@ function generateCustomizedReport(data: Record<string, unknown>[], summary: stri
       return '<tr><td colspan="100%">No data available for the selected configuration</td></tr>';
     }
     
-    const maxRows = Math.min(data.length, 20);
+    const maxRows = Math.min(data.length, 15); // Limit to 15 rows for PDF
     const headers = Object.keys(data[0]);
     
     return data.slice(0, maxRows).map(row => `
@@ -324,6 +324,7 @@ function generateCustomizedReport(data: Record<string, unknown>[], summary: stri
         .prose strong{color:#f8fafc;font-weight:600}
         .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
         .chip{background:var(--chip);border:1px solid var(--border);padding:6px 10px;border-radius:999px;color:#94a3b8;font-size:12px}
+        .charts-section{margin:18px 0}
         .charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
         @media (max-width:980px){.charts{grid-template-columns:1fr}}
         canvas{background:transparent;border-radius:var(--radius-lg);border:1px solid var(--border);padding:8px}
@@ -336,6 +337,27 @@ function generateCustomizedReport(data: Record<string, unknown>[], summary: stri
         .pill{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid var(--border);background:#0b1220;color:#cbd5e1;font-size:12px}
         footer{color:#94a3b8;font-size:12px;margin:22px 0 40px}
         .note{color:#a3a3a3;font-size:12px;margin-top:6px}
+        
+        /* PDF-specific styles */
+        @media print {
+          .container { padding: 8px !important; }
+          .card, .charts .card { page-break-inside: avoid; margin-bottom: 12px; }
+          .kpis { page-break-inside: avoid; margin: 12px 0; }
+          .charts-section { page-break-inside: avoid; margin: 12px 0; }
+          .charts { grid-template-columns: 1fr 1fr !important; gap: 12px; }
+          .charts .card { margin-bottom: 0; }
+          .charts .card h3 { font-size: 16px; margin: 0 0 8px 0; }
+          canvas { page-break-inside: avoid; height: 320px !important; }
+          .table-wrap { overflow: visible; }
+          table { font-size: 11px; page-break-inside: auto; }
+          th, td { padding: 8px 10px; }
+          tbody tr { page-break-inside: avoid; }
+          thead { display: table-header-group; }
+          header { margin-bottom: 8px; }
+          .summary-section { page-break-inside: avoid; margin: 12px 0; }
+          .summary-section .card { padding: 12px; }
+          footer { page-break-before: avoid; margin-top: 10px; }
+        }
     </style>
 </head>
 <body>
@@ -373,17 +395,20 @@ function generateCustomizedReport(data: Record<string, unknown>[], summary: stri
     </section>
 
     <!-- Charts -->
-    <section class="charts" aria-label="Charts">
-        <div class="card">
-            <h2>${chartData.primary.title || 'Primary Metrics'}</h2>
-            <canvas id="chartPrimary" width="400" height="200" aria-label="Chart of primary selected metrics" role="img"></canvas>
+    <section class="charts-section">
+        <h2 style="margin: 0 0 12px 0; font-size: 18px; color: var(--text);">Performance Graphs</h2>
+        <div class="charts" aria-label="Charts">
+            <div class="card">
+                <h3>${chartData.primary.title || 'Primary Metrics'}</h3>
+                <canvas id="chartPrimary" width="380" height="320" aria-label="Chart of primary selected metrics" role="img"></canvas>
+            </div>
+            ${chartData.secondary.datasets.length > 0 ? `
+            <div class="card">
+                <h3>${chartData.secondary.title || 'Secondary Metrics'}</h3>
+                <canvas id="chartSecondary" width="380" height="320" aria-label="Chart of secondary metrics" role="img"></canvas>
+            </div>
+            ` : ''}
         </div>
-        ${chartData.secondary.datasets.length > 0 ? `
-        <div class="card">
-            <h2>${chartData.secondary.title || 'Secondary Metrics'}</h2>
-            <canvas id="chartSecondary" width="400" height="200" aria-label="Chart of secondary metrics" role="img"></canvas>
-        </div>
-        ` : ''}
     </section>
 
     <!-- Detailed Table -->

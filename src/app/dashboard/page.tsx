@@ -17,7 +17,8 @@ import {
   XCircle, 
   AlertTriangle,
   Timer,
-  Calendar
+  Calendar,
+  Download
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
@@ -121,8 +122,8 @@ const Dashboard = () => {
       const msUntilNextRun = nextRun.getTime() - now.getTime();
       
       if (msUntilNextRun > 0) {
-        // Add 15 seconds offset to account for report generation time
-        const msUntilRefresh = msUntilNextRun + 15000;
+        // Add 30 seconds offset to account for report + PDF generation time
+        const msUntilRefresh = msUntilNextRun + 30000;
         
         console.log(`🔄 Scheduling page refresh in ${Math.round(msUntilRefresh / 1000)} seconds after next report`);
         
@@ -679,6 +680,14 @@ const Dashboard = () => {
                         <Copy className="h-4 w-4 mr-2" />
                         Copy Link
                       </Button>
+                      {schedulerStatus?.status?.pdfPath && (
+                        <Button variant="outline" size="sm" asChild>
+                          <a href={schedulerStatus.status.pdfPath} download>
+                            <Download className="h-4 w-4 mr-2" />
+                            Download PDF
+                          </a>
+                        </Button>
+                      )}
                       <Button size="sm" asChild>
                         <a href={schedulerStatus.status.reportPath} target="_blank" rel="noopener noreferrer">
                           <ExternalLink className="h-4 w-4 mr-2" />
@@ -689,6 +698,14 @@ const Dashboard = () => {
                   )}
                   {reportConfig?.delivery === "email" && (
                     <div className="flex gap-2">
+                      {schedulerStatus?.status?.pdfPath && (
+                        <Button variant="outline" size="sm" asChild>
+                          <a href={schedulerStatus.status.pdfPath} download>
+                            <Download className="h-4 w-4 mr-2" />
+                            Download PDF
+                          </a>
+                        </Button>
+                      )}
                       <Button size="sm" asChild>
                         <a href={schedulerStatus.status.reportPath} target="_blank" rel="noopener noreferrer">
                           <ExternalLink className="h-4 w-4 mr-2" />

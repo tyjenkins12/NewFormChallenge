@@ -46,6 +46,7 @@
     "node-cron": "^4.2.1",
     "nodemailer": "^7.0.6",
     "openai": "^4.56.0",
+    "puppeteer": "^24.19.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.62.0",

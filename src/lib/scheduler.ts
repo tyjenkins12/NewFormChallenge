@@ -3,6 +3,7 @@ import { ReportConfig, ReportRun, SchedulerStatus } from '@/types';
 import { fetchAdData, generateLLMSummary } from './api';
 import { generateReport, generateEmailReport } from './report-generator';
 import { sendEmail } from './email';
+import { savePdfReport, createEmailAttachment } from './pdf-generator';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs/promises';
 import path from 'path';
@@ -83,21 +84,33 @@ class ReportScheduler {
 
   private async initializeScheduler(): Promise<void> {
     console.log('🏁 initializeScheduler called');
+    
+    // Clear any existing timeout to prevent duplicates
+    if (this.scheduledTimeoutId) {
+      clearTimeout(this.scheduledTimeoutId);
+      this.scheduledTimeoutId = null;
+      console.log('🧹 Cleared existing timeout during initialization');
+    }
+    
+    // Clean up any stale lock files on startup
+    try {
+      await fs.unlink(this.lockFilePath);
+      console.log('🧹 Removed stale lock file on initialization');
+    } catch (error) {
+      // Lock file doesn't exist, which is fine
+    }
+    
     // Try to load existing config first
     await this.loadConfig();
     
     console.log('🔍 After loadConfig, config is:', this.config?.cadence, this.config?.platform);
     
-    // If we have a config, restore the scheduled task (only if not already scheduled)
-    if (this.config && this.config.cadence !== 'manual' && !this.scheduledTimeoutId) {
+    // If we have a config, restore the scheduled task
+    if (this.config && this.config.cadence !== 'manual') {
       console.log(`🔄 Scheduler: Restoring ${this.config.cadence} schedule for ${this.config.platform}`);
       await this.scheduleNextRunFromNow();
     } else {
-      if (this.scheduledTimeoutId) {
-        console.log('📋 Scheduler: Schedule already active, skipping restore');
-      } else {
-        console.log('📋 Scheduler: No existing configuration to restore');
-      }
+      console.log('📋 Scheduler: No existing configuration to restore or manual cadence');
     }
   }
 
@@ -350,6 +363,30 @@ class ReportScheduler {
       const data = await fetchAdData(this.config);
       console.log(`📊 Scheduler: Retrieved ${data.length} records from NewForm API`);
       
+      // Check if we have insufficient data - skip report generation entirely
+      if (data.length === 0) {
+        const errorMessage = `No data available for ${this.config.platform} ${this.config.level} level with ${this.config.dateRangeEnum} date range. Try 'campaign' level or 'last30' date range for better data availability.`;
+        console.log(`⚠️ Scheduler: ${errorMessage}`);
+        this.status.lastError = errorMessage;
+        run.status = 'error';
+        run.error = errorMessage;
+        console.log('📄 Scheduler: Skipping report generation due to no data available');
+        
+        // Clear any previous successful report paths since this run failed
+        this.status.lastRun = new Date();
+        this.status.reportPath = undefined;
+        this.status.pdfPath = undefined;
+        
+        // Update status to reflect error state and exit early
+        this.updateStatus();
+        await this.saveConfig();
+        return run;
+      }
+      
+      // Clear any previous error since we have data now
+      this.status.lastError = undefined;
+      console.log('✅ Scheduler: Have data, proceeding with report generation');
+      
       // Generate LLM summary
       const summary = await generateLLMSummary(data, this.config);
       
@@ -365,29 +402,51 @@ class ReportScheduler {
       run.status = 'success';
       run.reportPath = reportPath;
       run.reportUrl = `/reports/report-${runId}.html`;
+      console.log('✅ Scheduler: Generated report with real data');
 
-      // Check if we have insufficient data and set appropriate error
-      if (data.length === 0) {
-        const errorMessage = `No data available for ${this.config.platform} ${this.config.level} level with ${this.config.dateRangeEnum} date range. Try 'campaign' level or 'last30' date range for better data availability.`;
-        console.log(`⚠️ Scheduler: ${errorMessage}`);
-        this.status.lastError = errorMessage;
-        console.log('📄 Scheduler: Generated report with "No data available" message');
-      } else {
-        // Clear any previous error since we have data now
-        this.status.lastError = undefined;
-        console.log('✅ Scheduler: Generated report with real data');
+      // Generate PDF if needed (for email attachment or link download)
+      let pdfAttachment;
+      try {
+        if (this.config.delivery === 'email' && this.config.pdfAttachment) {
+          console.log('📄 Generating PDF attachment for email...');
+          console.log('📊 Email PDF HTML length:', reportHtml.length, 'chars');
+          console.log('📊 Email PDF HTML preview (first 200 chars):', reportHtml.substring(0, 200));
+          pdfAttachment = await createEmailAttachment(reportHtml, runId);
+          // Also save PDF for download button
+          const pdfUrl = await savePdfReport(reportHtml, runId);
+          run.pdfUrl = pdfUrl;
+          console.log('✅ PDF attachment created and saved for download:', pdfUrl);
+        } else if (this.config.delivery === 'link') {
+          console.log('📄 Generating PDF for download...');
+          console.log('📊 Link PDF HTML length:', reportHtml.length, 'chars');
+          console.log('📊 Link PDF HTML preview (first 200 chars):', reportHtml.substring(0, 200));
+          const pdfUrl = await savePdfReport(reportHtml, runId);
+          run.pdfUrl = pdfUrl;
+          console.log('✅ PDF saved for download:', pdfUrl);
+        }
+      } catch (pdfError) {
+        console.error('❌ PDF generation failed:', pdfError);
+        // Continue without PDF - don't fail the entire report
+        if (this.config.delivery === 'email' && this.config.pdfAttachment) {
+          console.log('📧 Will send email without PDF attachment due to PDF generation error');
+        }
       }
 
       // Handle delivery
       if (this.config.delivery === 'email' && this.config.email) {
         // Generate email-optimized version for sending
         const emailHtml = await generateEmailReport(data, summary, this.config);
-        await sendEmail(this.config.email, emailHtml, `${this.config.platform.toUpperCase()} Report`);
-        console.log('📧 Sent email-optimized report version');
+        await sendEmail(this.config.email, emailHtml, `${this.config.platform.toUpperCase()} Report`, pdfAttachment);
+        console.log('📧 Sent email-optimized report version' + (pdfAttachment ? ' with PDF attachment' : ''));
       }
 
       this.status.lastRun = new Date();
       this.status.reportPath = run.reportUrl;
+      
+      // Set PDF path if available
+      if (run.pdfUrl) {
+        this.status.pdfPath = run.pdfUrl;
+      }
 
       // For manual runs only, we don't reschedule automatically
       // Scheduled runs are handled by the timeout callback

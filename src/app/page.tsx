@@ -112,6 +112,7 @@ export default function Configure() {
     cadence: "",
     delivery: "",
     email: "",
+    pdfAttachment: false,
     breakdowns: [] as string[], // For Meta
     dimensions: [] as string[], // For TikTok
     timeIncrement: "7", // Default for Meta
@@ -232,6 +233,7 @@ export default function Configure() {
           email: config.email,
           timeIncrement: config.timeIncrement,
           reportType: config.reportType,
+          pdfAttachment: config.pdfAttachment,
           demoMode: demoMode,
         }),
       });
@@ -509,16 +511,31 @@ export default function Configure() {
 
               {/* Email Input */}
               {config.delivery === "email" && (
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address *</Label>
-                  <Input
-                    type="email"
-                    id="email"
-                    value={config.email}
-                    onChange={(e) => setConfig(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="Enter email address"
-                  />
-                </div>
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email Address *</Label>
+                    <Input
+                      type="email"
+                      id="email"
+                      value={config.email}
+                      onChange={(e) => setConfig(prev => ({ ...prev, email: e.target.value }))}
+                      placeholder="Enter email address"
+                    />
+                  </div>
+                  
+                  {/* PDF Attachment Option */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label htmlFor="pdfAttachment">Include PDF Attachment</Label>
+                      <p className="text-sm text-muted-foreground">Attach a PDF version of the report to the email</p>
+                    </div>
+                    <Switch
+                      id="pdfAttachment"
+                      checked={config.pdfAttachment}
+                      onCheckedChange={(checked) => setConfig(prev => ({ ...prev, pdfAttachment: checked }))}
+                    />
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>

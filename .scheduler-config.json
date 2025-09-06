@@ -8,43 +8,35 @@
     ],
     "level": "adset",
     "breakdowns": [
-      "age"
+      "age",
+      "country"
     ],
     "dimensions": [],
     "dateRangeEnum": "last30",
-    "cadence": "hourly",
+    "cadence": "manual",
     "delivery": "email",
     "email": "tyjen1218@gmail.com",
     "timeIncrement": "7",
     "reportType": "BASIC",
+    "pdfAttachment": true,
     "demoMode": {
-      "enabled": true,
-      "accelerated": true
+      "enabled": false,
+      "accelerated": false
     },
-    "id": "76dbd01b-7d68-4164-91af-39eae29c9e5a"
+    "id": "6c9644b7-3187-4f7f-9785-719ec7e92a4c"
   },
   "status": {
-    "isRunning": true,
-    "nextRun": "2025-09-06T16:03:34.723Z",
-    "lastRun": "2025-09-06T16:02:34.720Z",
-    "reportPath": "/reports/report-74ac14e0-f3cc-4886-a039-6961b6485260.html"
+    "isRunning": false,
+    "lastError": "No data available for meta adset level with last30 date range. Try 'campaign' level or 'last30' date range for better data availability.",
+    "lastRun": "2025-09-06T17:13:31.687Z"
   },
   "reportRuns": [
     {
-      "id": "92caf6bf-e799-4823-993d-afa750edb9f2",
-      "configId": "76dbd01b-7d68-4164-91af-39eae29c9e5a",
-      "timestamp": "2025-09-06T16:01:18.928Z",
-      "status": "success",
-      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-92caf6bf-e799-4823-993d-afa750edb9f2.html",
-      "reportUrl": "/reports/report-92caf6bf-e799-4823-993d-afa750edb9f2.html"
-    },
-    {
-      "id": "74ac14e0-f3cc-4886-a039-6961b6485260",
-      "configId": "76dbd01b-7d68-4164-91af-39eae29c9e5a",
-      "timestamp": "2025-09-06T16:02:21.542Z",
-      "status": "success",
-      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-74ac14e0-f3cc-4886-a039-6961b6485260.html",
-      "reportUrl": "/reports/report-74ac14e0-f3cc-4886-a039-6961b6485260.html"
+      "id": "0c09bd7e-6079-47db-af8f-0939f031c3a1",
+      "configId": "6c9644b7-3187-4f7f-9785-719ec7e92a4c",
+      "timestamp": "2025-09-06T17:13:30.753Z",
+      "status": "error",
+      "error": "No data available for meta adset level with last30 date range. Try 'campaign' level or 'last30' date range for better data availability."
     }
   ]
 }

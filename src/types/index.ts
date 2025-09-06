@@ -9,6 +9,7 @@ export interface ReportConfig {
   cadence: 'manual' | 'hourly' | '12hours' | 'daily';
   delivery: 'email' | 'link';
   email?: string;
+  pdfAttachment?: boolean;
   timeIncrement?: string; // For Meta
   reportType?: 'BASIC' | 'AUDIENCE'; // For TikTok
   demoMode?: {
@@ -25,6 +26,8 @@ export interface ReportRun {
   error?: string;
   reportPath?: string;
   reportUrl?: string;
+  pdfPath?: string;
+  pdfUrl?: string;
 }
 
 export interface SchedulerStatus {
@@ -33,6 +36,7 @@ export interface SchedulerStatus {
   nextRun?: Date;
   lastError?: string;
   reportPath?: string;
+  pdfPath?: string;
 }
 
 // Platform-specific parameters
