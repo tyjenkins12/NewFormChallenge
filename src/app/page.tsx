@@ -69,10 +69,14 @@ const getMetricDisplay = (metric: string) => {
     cost_per_conversion: { label: "Cost/Conv", format: (n) => `$${n.toFixed(2)}`, color: "text-chart-1" },
     conversion_rate: { label: "Conv Rate", format: (n) => `${n.toFixed(2)}%`, color: "text-chart-2" },
     actions: { label: "Actions", format: (n) => n.toFixed(2), color: "text-chart-3" },
-    cost_per_action_type: { label: "Cost/Action", format: (n) => `$${n.toFixed(2)}`, color: "text-chart-4" }
+    cost_per_action_type: { label: "Cost/Action", format: (n) => `$${n.toFixed(2)}`, color: "text-chart-4" },
+    skan_app_install: { label: "SKAN Installs", format: (n) => Math.round(n).toString(), color: "text-chart-1" },
+    skan_cost_per_app_install: { label: "SKAN Cost/Install", format: (n) => `$${n.toFixed(2)}`, color: "text-chart-2" },
+    skan_purchase: { label: "SKAN Purchases", format: (n) => Math.round(n).toString(), color: "text-chart-3" },
+    skan_cost_per_purchase: { label: "SKAN Cost/Purchase", format: (n) => `$${n.toFixed(2)}`, color: "text-chart-4" }
   };
   
-  return displays[metric] || { label: metric.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), format: (n) => n.toString(), color: "text-chart-1" };
+  return displays[metric] || { label: metric.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), format: (n) => n.toFixed(2), color: "text-chart-1" };
 };
 
 const platforms = [
@@ -93,6 +97,11 @@ import {
   CRON_PRESETS
 } from '@/types';
 import { validateCronExpression, describeCronExpression } from '@/lib/utils/cron-utils';
+import { 
+  getValidMetaBreakdowns, 
+  getValidTikTokDimensions, 
+  getDimensionLabel 
+} from '@/lib/level-dimension-mapping';
 
 const metaMetrics = META_METRICS.map(metric => ({ 
   id: metric, 
@@ -410,7 +419,30 @@ export default function Configure() {
               {config.platform && (
                 <div className="space-y-2">
                   <Label htmlFor="level">Level *</Label>
-                  <Select value={config.level} onValueChange={(value) => setConfig(prev => ({ ...prev, level: value }))}>
+                  <Select value={config.level} onValueChange={(value) => {
+                    setConfig(prev => {
+                      let updatedConfig = { ...prev, level: value };
+                      
+                      // Clear incompatible dimensions when level changes for TikTok
+                      if (prev.platform === 'tiktok') {
+                        const validDimensions = getValidTikTokDimensions(value);
+                        const filteredDimensions = prev.dimensions.filter(dimension => 
+                          validDimensions.includes(dimension)
+                        );
+                        updatedConfig.dimensions = filteredDimensions;
+                      }
+                      // Clear incompatible breakdowns when level changes for Meta
+                      else if (prev.platform === 'meta') {
+                        const validBreakdowns = getValidMetaBreakdowns(value);
+                        const filteredBreakdowns = prev.breakdowns.filter(breakdown => 
+                          validBreakdowns.includes(breakdown)
+                        );
+                        updatedConfig.breakdowns = filteredBreakdowns;
+                      }
+                      
+                      return updatedConfig;
+                    });
+                  }}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select reporting level" />
                     </SelectTrigger>
@@ -426,11 +458,11 @@ export default function Configure() {
               )}
 
               {/* Meta Breakdowns */}
-              {config.platform === "meta" && (
+              {config.platform === "meta" && config.level && (
                 <div className="space-y-3">
                   <Label>Breakdowns (optional)</Label>
                   <div className="grid grid-cols-3 gap-2">
-                    {META_BREAKDOWNS.map(breakdown => (
+                    {getValidMetaBreakdowns(config.level).map(breakdown => (
                       <div key={breakdown} className="flex items-center space-x-2">
                         <Checkbox
                           id={breakdown}
@@ -446,20 +478,25 @@ export default function Configure() {
                           }}
                         />
                         <Label htmlFor={breakdown} className="text-sm">
-                          {breakdown.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          {getDimensionLabel(breakdown)}
                         </Label>
                       </div>
                     ))}
                   </div>
+                  {getValidMetaBreakdowns(config.level).length === 0 && (
+                    <p className="text-sm text-muted-foreground p-2 border rounded">
+                      Select a level first to see available breakdowns
+                    </p>
+                  )}
                 </div>
               )}
 
               {/* TikTok Dimensions */}
-              {config.platform === "tiktok" && (
+              {config.platform === "tiktok" && config.level && (
                 <div className="space-y-3">
                   <Label>Dimensions (optional)</Label>
                   <div className="grid grid-cols-3 gap-2">
-                    {TIKTOK_DIMENSIONS.map(dimension => (
+                    {getValidTikTokDimensions(config.level).map(dimension => (
                       <div key={dimension} className="flex items-center space-x-2">
                         <Checkbox
                           id={dimension}
@@ -475,11 +512,16 @@ export default function Configure() {
                           }}
                         />
                         <Label htmlFor={dimension} className="text-sm">
-                          {dimension.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          {getDimensionLabel(dimension)}
                         </Label>
                       </div>
                     ))}
                   </div>
+                  {getValidTikTokDimensions(config.level).length === 0 && (
+                    <p className="text-sm text-muted-foreground p-2 border rounded">
+                      Select a level first to see available dimensions
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -716,8 +758,8 @@ export default function Configure() {
             // Generate dynamic mock data based on selected metrics
             const mockData = generateMockData(config.metrics);
             
-            // Calculate totals for ALL selected metrics (no limit)
-            const totals = config.metrics.map(metric => {
+            // Calculate totals for first 6 selected metrics (limit for display)
+            const totals = config.metrics.slice(0, 6).map(metric => {
               const total = mockData.reduce((sum, day) => sum + day[metric], 0);
               const display = getMetricDisplay(metric);
               return {

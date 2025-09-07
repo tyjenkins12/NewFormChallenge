@@ -64,8 +64,8 @@ export const TIKTOK_LEVELS = [
 
 export const META_METRICS = [
   'spend', 'impressions', 'clicks', 'ctr', 'cpc', 'reach', 'frequency',
-  'conversions', 'cost_per_conversion', 'conversion_rate', 'actions',
-  'cost_per_action_type'
+  'conversions', 'cost_per_conversion', 'actions', 'cost_per_action_type'
+  // Note: 'conversion_rate' removed as it's not available in the NewForm API
 ];
 
 export const META_BREAKDOWNS = [
@@ -73,12 +73,12 @@ export const META_BREAKDOWNS = [
   'platform_position', 'publisher_platform'
 ];
 
-export const META_LEVELS = ['account', 'campaign', 'adset', 'ad'];
+export const META_LEVELS = ['campaign', 'adset', 'ad', 'account']; // Move most reliable option first
 
 export const DATE_RANGES = [
-  { value: 'last7', label: 'Last 7 days' },
+  { value: 'last30', label: 'Last 30 days' }, // Move most reliable option first
   { value: 'last14', label: 'Last 14 days' },
-  { value: 'last30', label: 'Last 30 days' },
+  { value: 'last7', label: 'Last 7 days' },
   { value: 'lifetime', label: 'Lifetime' }
 ];
 

@@ -1,9 +1,26 @@
 import { ReportConfig } from '@/types';
+import { fetchAdDataPartitioned } from './partitioned-api';
 
 const API_BASE = 'https://bizdev.newform.ai';
 const TOKEN = 'NEWFORMCODINGCHALLENGE';
 
-export async function fetchAdData(config: ReportConfig): Promise<Record<string, unknown>[]> {
+export async function fetchAdData(config: ReportConfig, usePartitioning: boolean = true): Promise<Record<string, unknown>[]> {
+  // Use partitioned approach by default to handle mixed metric availability
+  if (usePartitioning) {
+    console.log('🔀 Using partitioned API approach for robust data fetching');
+    const result = await fetchAdDataPartitioned(config);
+    
+    if (result.totalRecords > 0) {
+      console.log(`✅ Partitioned fetch successful: ${result.totalRecords} records from ${result.partitionsUsed} partitions`);
+      return result.data;
+    } else {
+      console.log('⚠️ Partitioned fetch returned no data, falling back to regular approach');
+      // Fall back to regular approach
+    }
+  }
+
+  // Original single-request approach (fallback)
+  console.log('📡 Using original single-request API approach');
   const endpoint = config.platform === 'meta' ? '/sample-data/meta' : '/sample-data/tiktok';
   
   const body: Record<string, unknown> = {
@@ -43,9 +60,10 @@ export async function fetchAdData(config: ReportConfig): Promise<Record<string, 
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      // No Authorization header needed
+      'Authorization': `Token ${TOKEN}`,
     },
     body: JSON.stringify(body),
+    redirect: 'follow', // Equivalent to curl --location flag
   });
 
   if (!response.ok) {
@@ -63,7 +81,22 @@ export async function fetchAdData(config: ReportConfig): Promise<Record<string, 
   // Check if data is empty and provide helpful info
   if (!data || (Array.isArray(data) && data.length === 0)) {
     console.log(`No data available for: ${config.platform} ${config.level} level, ${config.dateRangeEnum} date range`);
-    console.log(`Suggestion: Try 'campaign' level or 'last30' date range for more data availability`);
+    
+    // Provide specific suggestions based on current config
+    const suggestions = [];
+    if (config.level !== 'campaign') {
+      suggestions.push("Try 'campaign' level");
+    }
+    if (config.dateRangeEnum !== 'last30') {
+      suggestions.push("Try 'last30' date range");
+    }
+    if (config.platform === 'meta' && config.breakdowns && config.breakdowns.length > 1) {
+      suggestions.push("Try fewer breakdowns (like just 'age')");
+    }
+    
+    if (suggestions.length > 0) {
+      console.log(`Suggestions: ${suggestions.join(', ')}`);
+    }
     
     // Still return empty array - the report generator will handle this gracefully
     return [];

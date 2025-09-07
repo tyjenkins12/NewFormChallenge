@@ -30,10 +30,14 @@ function generateCustomizedReport(data: Record<string, unknown>[], summary: stri
       cost_per_conversion: { label: 'COST PER CONVERSION', format: (n) => `$${n.toFixed(2)}` },
       conversion_rate: { label: 'CONVERSION RATE', format: (n) => `${n.toFixed(2)}%` },
       actions: { label: 'TOTAL ACTIONS', format: (n) => n.toFixed(2) },
-      cost_per_action_type: { label: 'COST PER ACTION', format: (n) => `$${n.toFixed(2)}` }
+      cost_per_action_type: { label: 'COST PER ACTION', format: (n) => `$${n.toFixed(2)}` },
+      skan_app_install: { label: 'SKAN APP INSTALLS', format: (n) => Math.round(n).toString() },
+      skan_cost_per_app_install: { label: 'SKAN COST PER INSTALL', format: (n) => `$${n.toFixed(2)}` },
+      skan_purchase: { label: 'SKAN PURCHASES', format: (n) => Math.round(n).toString() },
+      skan_cost_per_purchase: { label: 'SKAN COST PER PURCHASE', format: (n) => `$${n.toFixed(2)}` }
     };
     
-    return displays[metric] || { label: metric.replace(/_/g, ' ').toUpperCase(), format: (n) => n.toString() };
+    return displays[metric] || { label: metric.replace(/_/g, ' ').toUpperCase(), format: (n) => n.toFixed(2) };
   };
 
   // Calculate totals for selected metrics
@@ -629,10 +633,14 @@ async function generateEmailOptimizedReport(data: Record<string, unknown>[], sum
       cost_per_conversion: { label: 'COST PER CONVERSION', format: (n) => `$${n.toFixed(2)}` },
       conversion_rate: { label: 'CONVERSION RATE', format: (n) => `${n.toFixed(2)}%` },
       actions: { label: 'TOTAL ACTIONS', format: (n) => n.toFixed(2) },
-      cost_per_action_type: { label: 'COST PER ACTION', format: (n) => `$${n.toFixed(2)}` }
+      cost_per_action_type: { label: 'COST PER ACTION', format: (n) => `$${n.toFixed(2)}` },
+      skan_app_install: { label: 'SKAN APP INSTALLS', format: (n) => Math.round(n).toString() },
+      skan_cost_per_app_install: { label: 'SKAN COST PER INSTALL', format: (n) => `$${n.toFixed(2)}` },
+      skan_purchase: { label: 'SKAN PURCHASES', format: (n) => Math.round(n).toString() },
+      skan_cost_per_purchase: { label: 'SKAN COST PER PURCHASE', format: (n) => `$${n.toFixed(2)}` }
     };
     
-    return displays[metric] || { label: metric.replace(/_/g, ' ').toUpperCase(), format: (n) => n.toString() };
+    return displays[metric] || { label: metric.replace(/_/g, ' ').toUpperCase(), format: (n) => n.toFixed(2) };
   };
 
   // Calculate totals for selected metrics
