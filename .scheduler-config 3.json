@@ -1,0 +1,55 @@
+{
+  "config": {
+    "platform": "meta",
+    "metrics": [
+      "spend",
+      "frequency",
+      "cost_per_action_type",
+      "conversions",
+      "ctr",
+      "actions"
+    ],
+    "level": "adset",
+    "breakdowns": [
+      "age"
+    ],
+    "dimensions": [],
+    "dateRangeEnum": "last14",
+    "cadence": "manual",
+    "cronExpression": "",
+    "delivery": "email",
+    "email": "tyjen1218@gmail.com",
+    "timeIncrement": "7",
+    "reportType": "BASIC",
+    "pdfAttachment": true,
+    "tokenSettings": {
+      "enabled": true,
+      "expirationHours": 168,
+      "allowRefresh": true
+    },
+    "demoMode": {
+      "enabled": true,
+      "accelerated": true
+    },
+    "id": "21f38854-d62f-4340-a4ea-f22b18050cf8"
+  },
+  "status": {
+    "isRunning": false,
+    "lastRun": "2025-09-07T21:08:26.090Z",
+    "reportPath": "http://localhost:3002/reports/report-23b79943-71fd-4902-9679-496e1ed0e3e4.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXBvcnRJZCI6IjIzYjc5OTQzLTcxZmQtNDkwMi05Njc5LTQ5NmUxZWQwZTNlNCIsInJlcG9ydFR5cGUiOiJodG1sIiwiZXhwaXJlc0F0IjoxNzU3ODg0MDkxLCJwZXJtaXNzaW9ucyI6WyJyZWFkIiwiZG93bmxvYWQiXSwiaWF0IjoxNzU3Mjc5MjkxLCJleHAiOjE3NTc4ODQwOTEsImF1ZCI6InJlcG9ydC1hY2Nlc3MiLCJpc3MiOiJzY2hlZHVsZWQtaW5zaWdodC1yZXBvcnRzIiwianRpIjoiMjNiNzk5NDMtNzFmZC00OTAyLTk2NzktNDk2ZTFlZDBlM2U0LTE3NTcyNzkyOTE3MzMtcHRjOHFvIn0.E70Yyl2kC4-oZvPjAa51btJ7RL0r4G_Jv2TjZKeoPts",
+    "pdfPath": "http://localhost:3002/reports/report-23b79943-71fd-4902-9679-496e1ed0e3e4.pdf?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXBvcnRJZCI6IjIzYjc5OTQzLTcxZmQtNDkwMi05Njc5LTQ5NmUxZWQwZTNlNCIsInJlcG9ydFR5cGUiOiJwZGYiLCJleHBpcmVzQXQiOjE3NTc4ODQxMDUsInBlcm1pc3Npb25zIjpbInJlYWQiLCJkb3dubG9hZCJdLCJpYXQiOjE3NTcyNzkzMDUsImV4cCI6MTc1Nzg4NDEwNSwiYXVkIjoicmVwb3J0LWFjY2VzcyIsImlzcyI6InNjaGVkdWxlZC1pbnNpZ2h0LXJlcG9ydHMiLCJqdGkiOiIyM2I3OTk0My03MWZkLTQ5MDItOTY3OS00OTZlMWVkMGUzZTQtMTc1NzI3OTMwNTE0MS03anh3YW8ifQ.65jXnOh1ObQeeHzxiNMLLvJuIYJ2onw8TVeckbBlq1s"
+  },
+  "reportRuns": [
+    {
+      "id": "23b79943-71fd-4902-9679-496e1ed0e3e4",
+      "configId": "21f38854-d62f-4340-a4ea-f22b18050cf8",
+      "timestamp": "2025-09-07T21:07:51.865Z",
+      "status": "success",
+      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/private/reports/report-23b79943-71fd-4902-9679-496e1ed0e3e4.html",
+      "reportUrl": "/reports/report-23b79943-71fd-4902-9679-496e1ed0e3e4.html",
+      "signedUrl": "http://localhost:3002/reports/report-23b79943-71fd-4902-9679-496e1ed0e3e4.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXBvcnRJZCI6IjIzYjc5OTQzLTcxZmQtNDkwMi05Njc5LTQ5NmUxZWQwZTNlNCIsInJlcG9ydFR5cGUiOiJodG1sIiwiZXhwaXJlc0F0IjoxNzU3ODg0MDkxLCJwZXJtaXNzaW9ucyI6WyJyZWFkIiwiZG93bmxvYWQiXSwiaWF0IjoxNzU3Mjc5MjkxLCJleHAiOjE3NTc4ODQwOTEsImF1ZCI6InJlcG9ydC1hY2Nlc3MiLCJpc3MiOiJzY2hlZHVsZWQtaW5zaWdodC1yZXBvcnRzIiwianRpIjoiMjNiNzk5NDMtNzFmZC00OTAyLTk2NzktNDk2ZTFlZDBlM2U0LTE3NTcyNzkyOTE3MzMtcHRjOHFvIn0.E70Yyl2kC4-oZvPjAa51btJ7RL0r4G_Jv2TjZKeoPts",
+      "pdfUrl": "/reports/report-23b79943-71fd-4902-9679-496e1ed0e3e4.pdf",
+      "signedPdfUrl": "http://localhost:3002/reports/report-23b79943-71fd-4902-9679-496e1ed0e3e4.pdf?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXBvcnRJZCI6IjIzYjc5OTQzLTcxZmQtNDkwMi05Njc5LTQ5NmUxZWQwZTNlNCIsInJlcG9ydFR5cGUiOiJwZGYiLCJleHBpcmVzQXQiOjE3NTc4ODQxMDUsInBlcm1pc3Npb25zIjpbInJlYWQiLCJkb3dubG9hZCJdLCJpYXQiOjE3NTcyNzkzMDUsImV4cCI6MTc1Nzg4NDEwNSwiYXVkIjoicmVwb3J0LWFjY2VzcyIsImlzcyI6InNjaGVkdWxlZC1pbnNpZ2h0LXJlcG9ydHMiLCJqdGkiOiIyM2I3OTk0My03MWZkLTQ5MDItOTY3OS00OTZlMWVkMGUzZTQtMTc1NzI3OTMwNTE0MS03anh3YW8ifQ.65jXnOh1ObQeeHzxiNMLLvJuIYJ2onw8TVeckbBlq1s"
+    }
+  ]
+}

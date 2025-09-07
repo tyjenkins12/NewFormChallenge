@@ -2,51 +2,50 @@
   "config": {
     "platform": "meta",
     "metrics": [
+      "ctr",
       "spend",
-      "impressions"
+      "impressions",
+      "clicks"
     ],
     "level": "adset",
     "breakdowns": [
       "age"
     ],
     "dimensions": [],
-    "dateRangeEnum": "last7",
-    "cadence": "hourly",
+    "dateRangeEnum": "last14",
+    "cadence": "manual",
     "cronExpression": "",
-    "delivery": "email",
-    "email": "tyjen1218@gmail.com",
+    "delivery": "link",
+    "email": "",
     "timeIncrement": "7",
     "reportType": "BASIC",
-    "pdfAttachment": true,
+    "pdfAttachment": false,
     "tokenSettings": {
-      "enabled": true,
+      "enabled": false,
       "expirationHours": 168,
       "allowRefresh": true
     },
     "demoMode": {
-      "enabled": true,
-      "accelerated": true
+      "enabled": false,
+      "accelerated": false
     },
-    "id": "e4ccd860-9d78-496c-b850-be776eb6a89a"
+    "id": "768c2d11-bf10-4efe-963e-88eb1c83cb37"
   },
   "status": {
-    "isRunning": true,
-    "nextRun": "2025-09-07T20:41:53.973Z",
-    "lastRun": "2025-09-07T20:40:53.970Z",
-    "reportPath": "http://localhost:3007/reports/report-2d9f110f-9920-4437-9183-203467cf7f84.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXBvcnRJZCI6IjJkOWYxMTBmLTk5MjAtNDQzNy05MTgzLTIwMzQ2N2NmN2Y4NCIsInJlcG9ydFR5cGUiOiJodG1sIiwiZXhwaXJlc0F0IjoxNzU3ODgyNDQwLCJwZXJtaXNzaW9ucyI6WyJyZWFkIiwiZG93bmxvYWQiXSwiaWF0IjoxNzU3Mjc3NjQwLCJleHAiOjE3NTc4ODI0NDAsImF1ZCI6InJlcG9ydC1hY2Nlc3MiLCJpc3MiOiJzY2hlZHVsZWQtaW5zaWdodC1yZXBvcnRzIiwianRpIjoiMmQ5ZjExMGYtOTkyMC00NDM3LTkxODMtMjAzNDY3Y2Y3Zjg0LTE3NTcyNzc2NDAwMjQtNWh2cXMifQ.iXY-6rFFQxE1xmPHc_HMPBK5H5MVvCJtbf2_TKDztao",
-    "pdfPath": "http://localhost:3007/reports/report-2d9f110f-9920-4437-9183-203467cf7f84.pdf?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXBvcnRJZCI6IjJkOWYxMTBmLTk5MjAtNDQzNy05MTgzLTIwMzQ2N2NmN2Y4NCIsInJlcG9ydFR5cGUiOiJwZGYiLCJleHBpcmVzQXQiOjE3NTc4ODI0NTMsInBlcm1pc3Npb25zIjpbInJlYWQiLCJkb3dubG9hZCJdLCJpYXQiOjE3NTcyNzc2NTMsImV4cCI6MTc1Nzg4MjQ1MywiYXVkIjoicmVwb3J0LWFjY2VzcyIsImlzcyI6InNjaGVkdWxlZC1pbnNpZ2h0LXJlcG9ydHMiLCJqdGkiOiIyZDlmMTEwZi05OTIwLTQ0MzctOTE4My0yMDM0NjdjZjdmODQtMTc1NzI3NzY1MzM1OC1rZDQ1eWoifQ.copffijhZkrjRjpp2obfckZxnAUEEGNNibX7l2ADWdY"
+    "isRunning": false,
+    "lastRun": "2025-09-07T21:13:31.863Z",
+    "reportPath": "/reports/report-69473258-467c-49f9-9d3e-3dfa848919db.html",
+    "pdfPath": "/reports/report-69473258-467c-49f9-9d3e-3dfa848919db.pdf"
   },
   "reportRuns": [
     {
-      "id": "2d9f110f-9920-4437-9183-203467cf7f84",
-      "configId": "e4ccd860-9d78-496c-b850-be776eb6a89a",
-      "timestamp": "2025-09-07T20:40:33.698Z",
+      "id": "69473258-467c-49f9-9d3e-3dfa848919db",
+      "configId": "768c2d11-bf10-4efe-963e-88eb1c83cb37",
+      "timestamp": "2025-09-07T21:13:17.944Z",
       "status": "success",
-      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/private/reports/report-2d9f110f-9920-4437-9183-203467cf7f84.html",
-      "reportUrl": "/reports/report-2d9f110f-9920-4437-9183-203467cf7f84.html",
-      "signedUrl": "http://localhost:3007/reports/report-2d9f110f-9920-4437-9183-203467cf7f84.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXBvcnRJZCI6IjJkOWYxMTBmLTk5MjAtNDQzNy05MTgzLTIwMzQ2N2NmN2Y4NCIsInJlcG9ydFR5cGUiOiJodG1sIiwiZXhwaXJlc0F0IjoxNzU3ODgyNDQwLCJwZXJtaXNzaW9ucyI6WyJyZWFkIiwiZG93bmxvYWQiXSwiaWF0IjoxNzU3Mjc3NjQwLCJleHAiOjE3NTc4ODI0NDAsImF1ZCI6InJlcG9ydC1hY2Nlc3MiLCJpc3MiOiJzY2hlZHVsZWQtaW5zaWdodC1yZXBvcnRzIiwianRpIjoiMmQ5ZjExMGYtOTkyMC00NDM3LTkxODMtMjAzNDY3Y2Y3Zjg0LTE3NTcyNzc2NDAwMjQtNWh2cXMifQ.iXY-6rFFQxE1xmPHc_HMPBK5H5MVvCJtbf2_TKDztao",
-      "pdfUrl": "/reports/report-2d9f110f-9920-4437-9183-203467cf7f84.pdf",
-      "signedPdfUrl": "http://localhost:3007/reports/report-2d9f110f-9920-4437-9183-203467cf7f84.pdf?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXBvcnRJZCI6IjJkOWYxMTBmLTk5MjAtNDQzNy05MTgzLTIwMzQ2N2NmN2Y4NCIsInJlcG9ydFR5cGUiOiJwZGYiLCJleHBpcmVzQXQiOjE3NTc4ODI0NTMsInBlcm1pc3Npb25zIjpbInJlYWQiLCJkb3dubG9hZCJdLCJpYXQiOjE3NTcyNzc2NTMsImV4cCI6MTc1Nzg4MjQ1MywiYXVkIjoicmVwb3J0LWFjY2VzcyIsImlzcyI6InNjaGVkdWxlZC1pbnNpZ2h0LXJlcG9ydHMiLCJqdGkiOiIyZDlmMTEwZi05OTIwLTQ0MzctOTE4My0yMDM0NjdjZjdmODQtMTc1NzI3NzY1MzM1OC1rZDQ1eWoifQ.copffijhZkrjRjpp2obfckZxnAUEEGNNibX7l2ADWdY"
+      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/private/reports/report-69473258-467c-49f9-9d3e-3dfa848919db.html",
+      "reportUrl": "/reports/report-69473258-467c-49f9-9d3e-3dfa848919db.html",
+      "pdfUrl": "/reports/report-69473258-467c-49f9-9d3e-3dfa848919db.pdf"
     }
   ]
 }

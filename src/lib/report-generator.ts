@@ -110,6 +110,22 @@ function generateCustomizedReport(data: Record<string, unknown>[], summary: stri
     
     switch (metric) {
       case 'ctr':
+        // First try to use direct CTR values if available, otherwise calculate from impressions/clicks
+        const ctrValues = data
+          .map(item => {
+            const value = item.ctr;
+            if (typeof value === 'string') return parseFloat(value);
+            if (typeof value === 'number') return value;
+            return null;
+          })
+          .filter(value => value !== null && !isNaN(value) && value >= 0);
+        
+        if (ctrValues.length > 0) {
+          // Use average of existing CTR values
+          return ctrValues.reduce((sum, ctr) => sum + ctr, 0) / ctrValues.length;
+        }
+        
+        // Fallback: calculate from impressions and clicks
         return totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
       case 'cpc':
         return totalClicks > 0 ? totalSpend / totalClicks : 0;
@@ -137,7 +153,19 @@ function generateCustomizedReport(data: Record<string, unknown>[], summary: stri
       case 'cost_per_action_type':
         // Find average cost for most common action type
         const costBreakdowns = data.flatMap(item => item._cost_per_action_breakdown || []);
-        if (costBreakdowns.length === 0) return calculateMetricTotal(data, metric);
+        if (costBreakdowns.length === 0) {
+          // Fallback: use simple average of cost_per_action_type values when breakdown data unavailable
+          const costValues = data
+            .map(item => {
+              const value = item.cost_per_action_type;
+              if (typeof value === 'string') return parseFloat(value);
+              if (typeof value === 'number') return value;
+              return 0;
+            })
+            .filter(value => !isNaN(value) && value > 0);
+          
+          return costValues.length > 0 ? costValues.reduce((sum, cost) => sum + cost, 0) / costValues.length : 0;
+        }
         
         // Get most common action type from actions breakdown
         const allActionBreakdowns = data.flatMap(item => item._actions_breakdown || []);
@@ -845,6 +873,22 @@ async function generateEmailOptimizedReport(data: Record<string, unknown>[], sum
     
     switch (metric) {
       case 'ctr':
+        // First try to use direct CTR values if available, otherwise calculate from impressions/clicks
+        const ctrValues = data
+          .map(item => {
+            const value = item.ctr;
+            if (typeof value === 'string') return parseFloat(value);
+            if (typeof value === 'number') return value;
+            return null;
+          })
+          .filter(value => value !== null && !isNaN(value) && value >= 0);
+        
+        if (ctrValues.length > 0) {
+          // Use average of existing CTR values
+          return ctrValues.reduce((sum, ctr) => sum + ctr, 0) / ctrValues.length;
+        }
+        
+        // Fallback: calculate from impressions and clicks
         return totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
       case 'cpc':
         return totalClicks > 0 ? totalSpend / totalClicks : 0;
