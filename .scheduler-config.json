@@ -1,27 +1,26 @@
 {
   "config": {
-    "platform": "tiktok",
+    "platform": "meta",
     "metrics": [
       "spend",
-      "skan_app_install",
-      "conversion_rate",
-      "cost_per_conversion",
-      "cpc",
-      "skan_cost_per_purchase",
-      "skan_cost_per_app_install",
-      "reach",
       "impressions",
       "clicks",
+      "reach",
       "ctr",
       "frequency",
-      "skan_purchase"
+      "actions",
+      "cost_per_action_type",
+      "conversions",
+      "cpc",
+      "cost_per_conversion"
     ],
-    "level": "AUCTION_CAMPAIGN",
-    "breakdowns": [],
-    "dimensions": [
-      "campaign_id"
+    "level": "adset",
+    "breakdowns": [
+      "age",
+      "gender"
     ],
-    "dateRangeEnum": "lifetime",
+    "dimensions": [],
+    "dateRangeEnum": "last7",
     "cadence": "manual",
     "cronExpression": "",
     "delivery": "email",
@@ -30,7 +29,7 @@
     "reportType": "BASIC",
     "pdfAttachment": true,
     "tokenSettings": {
-      "enabled": false,
+      "enabled": true,
       "expirationHours": 168,
       "allowRefresh": true
     },
@@ -38,84 +37,25 @@
       "enabled": false,
       "accelerated": false
     },
-    "id": "441a001e-d3ec-4e3c-9f5f-7652982a7d32"
+    "id": "41dad18c-876b-4135-ac53-fb1eeba9078a"
   },
   "status": {
     "isRunning": false,
-    "lastRun": "2025-09-07T17:47:40.908Z",
-    "reportPath": "/reports/report-2335f1b6-c3e8-4847-8821-5ee80cb420c0.html",
-    "pdfPath": "/reports/report-2335f1b6-c3e8-4847-8821-5ee80cb420c0.pdf"
+    "lastRun": "2025-09-07T17:57:19.244Z",
+    "reportPath": "http://localhost:3002/reports/report-4e8460bf-69cc-4f35-a1b1-a8b73dc9d7da.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXBvcnRJZCI6IjRlODQ2MGJmLTY5Y2MtNGYzNS1hMWIxLWE4YjczZGM5ZDdkYSIsInJlcG9ydFR5cGUiOiJodG1sIiwiZXhwaXJlc0F0IjoxNzU3ODcyNjI1LCJwZXJtaXNzaW9ucyI6WyJyZWFkIiwiZG93bmxvYWQiXSwiaWF0IjoxNzU3MjY3ODI1LCJleHAiOjE3NTc4NzI2MjUsImF1ZCI6InJlcG9ydC1hY2Nlc3MiLCJpc3MiOiJzY2hlZHVsZWQtaW5zaWdodC1yZXBvcnRzIiwianRpIjoiNGU4NDYwYmYtNjljYy00ZjM1LWExYjEtYThiNzNkYzlkN2RhLTE3NTcyNjc4MjUyNjMtMXNvcGlybCJ9.Co-7r9xX3PiKBomDCneHFw9Khvf806qmpGj_yYrdmdQ",
+    "pdfPath": "http://localhost:3002/reports/report-4e8460bf-69cc-4f35-a1b1-a8b73dc9d7da.pdf?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXBvcnRJZCI6IjRlODQ2MGJmLTY5Y2MtNGYzNS1hMWIxLWE4YjczZGM5ZDdkYSIsInJlcG9ydFR5cGUiOiJwZGYiLCJleHBpcmVzQXQiOjE3NTc4NzI2MzgsInBlcm1pc3Npb25zIjpbInJlYWQiLCJkb3dubG9hZCJdLCJpYXQiOjE3NTcyNjc4MzgsImV4cCI6MTc1Nzg3MjYzOCwiYXVkIjoicmVwb3J0LWFjY2VzcyIsImlzcyI6InNjaGVkdWxlZC1pbnNpZ2h0LXJlcG9ydHMiLCJqdGkiOiI0ZTg0NjBiZi02OWNjLTRmMzUtYTFiMS1hOGI3M2RjOWQ3ZGEtMTc1NzI2NzgzODQ5Ny1raDViZSJ9.MOiRdXLz2wdSt4vCpNz78xlUVAY1wWY5jSV6xrwjRc0"
   },
   "reportRuns": [
     {
-      "id": "c021ab38-3a1b-4844-be24-2edefc61de14",
-      "configId": "e487189b-0c28-4da5-aad4-5a24f8766946",
-      "timestamp": "2025-09-07T17:30:55.656Z",
+      "id": "4e8460bf-69cc-4f35-a1b1-a8b73dc9d7da",
+      "configId": "41dad18c-876b-4135-ac53-fb1eeba9078a",
+      "timestamp": "2025-09-07T17:56:35.868Z",
       "status": "success",
-      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-c021ab38-3a1b-4844-be24-2edefc61de14.html",
-      "reportUrl": "/reports/report-c021ab38-3a1b-4844-be24-2edefc61de14.html",
-      "pdfUrl": "/reports/report-c021ab38-3a1b-4844-be24-2edefc61de14.pdf"
-    },
-    {
-      "id": "8205a7be-82e1-4b94-bfed-76ec5977ecb9",
-      "configId": "163bf53c-b3e6-4a33-ae8f-4e2df073681d",
-      "timestamp": "2025-09-07T17:36:24.660Z",
-      "status": "success",
-      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-8205a7be-82e1-4b94-bfed-76ec5977ecb9.html",
-      "reportUrl": "/reports/report-8205a7be-82e1-4b94-bfed-76ec5977ecb9.html",
-      "pdfUrl": "/reports/report-8205a7be-82e1-4b94-bfed-76ec5977ecb9.pdf"
-    },
-    {
-      "id": "efae9e6a-66b5-472e-af37-93dde742dd99",
-      "configId": "3be10d66-0a04-4660-9032-a679ce3b560c",
-      "timestamp": "2025-09-07T17:40:37.612Z",
-      "status": "success",
-      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-efae9e6a-66b5-472e-af37-93dde742dd99.html",
-      "reportUrl": "/reports/report-efae9e6a-66b5-472e-af37-93dde742dd99.html",
-      "pdfUrl": "/reports/report-efae9e6a-66b5-472e-af37-93dde742dd99.pdf"
-    },
-    {
-      "id": "d591d092-5e6a-4053-907f-b34b796c51ea",
-      "configId": "3d58b133-393a-4db9-b24d-54fa1ce74638",
-      "timestamp": "2025-09-07T17:41:29.793Z",
-      "status": "success",
-      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-d591d092-5e6a-4053-907f-b34b796c51ea.html",
-      "reportUrl": "/reports/report-d591d092-5e6a-4053-907f-b34b796c51ea.html",
-      "pdfUrl": "/reports/report-d591d092-5e6a-4053-907f-b34b796c51ea.pdf"
-    },
-    {
-      "id": "fb13ef79-4129-46d2-9a9d-76e6afbd4249",
-      "configId": "82eda0e8-f4ed-43e1-9920-1d643fa907a2",
-      "timestamp": "2025-09-07T17:42:07.789Z",
-      "status": "success",
-      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-fb13ef79-4129-46d2-9a9d-76e6afbd4249.html",
-      "reportUrl": "/reports/report-fb13ef79-4129-46d2-9a9d-76e6afbd4249.html",
-      "pdfUrl": "/reports/report-fb13ef79-4129-46d2-9a9d-76e6afbd4249.pdf"
-    },
-    {
-      "id": "cf591b18-1d21-4ece-8f26-8057c4e992a7",
-      "configId": "09f89519-1e13-47ef-a061-abd1fe2767b3",
-      "timestamp": "2025-09-07T17:43:07.227Z",
-      "status": "success",
-      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-cf591b18-1d21-4ece-8f26-8057c4e992a7.html",
-      "reportUrl": "/reports/report-cf591b18-1d21-4ece-8f26-8057c4e992a7.html",
-      "pdfUrl": "/reports/report-cf591b18-1d21-4ece-8f26-8057c4e992a7.pdf"
-    },
-    {
-      "id": "bbe85060-0bbc-41ac-bb0c-0c23a4e80659",
-      "configId": "f6972a13-e918-4612-ae36-599cacc2c397",
-      "timestamp": "2025-09-07T17:46:55.241Z",
-      "status": "error",
-      "error": "No data available for tiktok AUCTION_CAMPAIGN level with lifetime date range. Try 'campaign' level or 'last30' date range for better data availability."
-    },
-    {
-      "id": "2335f1b6-c3e8-4847-8821-5ee80cb420c0",
-      "configId": "441a001e-d3ec-4e3c-9f5f-7652982a7d32",
-      "timestamp": "2025-09-07T17:47:16.640Z",
-      "status": "success",
-      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-2335f1b6-c3e8-4847-8821-5ee80cb420c0.html",
-      "reportUrl": "/reports/report-2335f1b6-c3e8-4847-8821-5ee80cb420c0.html",
-      "pdfUrl": "/reports/report-2335f1b6-c3e8-4847-8821-5ee80cb420c0.pdf"
+      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-4e8460bf-69cc-4f35-a1b1-a8b73dc9d7da.html",
+      "reportUrl": "/reports/report-4e8460bf-69cc-4f35-a1b1-a8b73dc9d7da.html",
+      "signedUrl": "http://localhost:3002/reports/report-4e8460bf-69cc-4f35-a1b1-a8b73dc9d7da.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXBvcnRJZCI6IjRlODQ2MGJmLTY5Y2MtNGYzNS1hMWIxLWE4YjczZGM5ZDdkYSIsInJlcG9ydFR5cGUiOiJodG1sIiwiZXhwaXJlc0F0IjoxNzU3ODcyNjI1LCJwZXJtaXNzaW9ucyI6WyJyZWFkIiwiZG93bmxvYWQiXSwiaWF0IjoxNzU3MjY3ODI1LCJleHAiOjE3NTc4NzI2MjUsImF1ZCI6InJlcG9ydC1hY2Nlc3MiLCJpc3MiOiJzY2hlZHVsZWQtaW5zaWdodC1yZXBvcnRzIiwianRpIjoiNGU4NDYwYmYtNjljYy00ZjM1LWExYjEtYThiNzNkYzlkN2RhLTE3NTcyNjc4MjUyNjMtMXNvcGlybCJ9.Co-7r9xX3PiKBomDCneHFw9Khvf806qmpGj_yYrdmdQ",
+      "pdfUrl": "/reports/report-4e8460bf-69cc-4f35-a1b1-a8b73dc9d7da.pdf",
+      "signedPdfUrl": "http://localhost:3002/reports/report-4e8460bf-69cc-4f35-a1b1-a8b73dc9d7da.pdf?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXBvcnRJZCI6IjRlODQ2MGJmLTY5Y2MtNGYzNS1hMWIxLWE4YjczZGM5ZDdkYSIsInJlcG9ydFR5cGUiOiJwZGYiLCJleHBpcmVzQXQiOjE3NTc4NzI2MzgsInBlcm1pc3Npb25zIjpbInJlYWQiLCJkb3dubG9hZCJdLCJpYXQiOjE3NTcyNjc4MzgsImV4cCI6MTc1Nzg3MjYzOCwiYXVkIjoicmVwb3J0LWFjY2VzcyIsImlzcyI6InNjaGVkdWxlZC1pbnNpZ2h0LXJlcG9ydHMiLCJqdGkiOiI0ZTg0NjBiZi02OWNjLTRmMzUtYTFiMS1hOGI3M2RjOWQ3ZGEtMTc1NzI2NzgzODQ5Ny1raDViZSJ9.MOiRdXLz2wdSt4vCpNz78xlUVAY1wWY5jSV6xrwjRc0"
     }
   ]
 }

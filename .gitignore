@@ -39,3 +39,22 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Development and test files
+test-*.js
+*.log
+dev.log
+
+# Generated reports and PDFs
+/public/reports/*.html
+/public/reports/*.pdf
+report-*.pdf
+report-*.html
+
+# Scheduler state
+.scheduler-config.json
+.report-generation.lock
+
+# IDE
+.idea/
+.vscode/
