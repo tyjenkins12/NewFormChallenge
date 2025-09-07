@@ -16,7 +16,54 @@ export async function generateEmailReport(data: Record<string, unknown>[], summa
 }
 
 function generateCustomizedReport(data: Record<string, unknown>[], summary: string, config: ReportConfig, hasData: boolean): string {
-  // Get metric display info
+  // Helper function to get most common action type label
+  const getMostCommonActionLabel = (data: Record<string, unknown>[]): string => {
+    if (!hasData) return 'TOTAL ACTIONS';
+    
+    const actionBreakdowns = data.flatMap(item => item._actions_breakdown || []);
+    if (actionBreakdowns.length === 0) return 'TOTAL ACTIONS';
+    
+    const actionTypeCounts: Record<string, number> = {};
+    actionBreakdowns.forEach((action: any) => {
+      if (action?.action_type) {
+        const value = typeof action.value === 'string' ? parseFloat(action.value) : (action.value || 0);
+        actionTypeCounts[action.action_type] = (actionTypeCounts[action.action_type] || 0) + value;
+      }
+    });
+    
+    const mostCommonAction = Object.entries(actionTypeCounts).reduce((max, [type, count]) => 
+      count > max[1] ? [type, count] : max, ['', 0])[0];
+    
+    if (!mostCommonAction) return 'TOTAL ACTIONS';
+    
+    const actionLabel = mostCommonAction.replace(/_/g, ' ').toUpperCase();
+    return `MOST COMMON ACTION: ${actionLabel}`;
+  };
+
+  // Helper function to get most common action cost label  
+  const getMostCommonActionCostLabel = (data: Record<string, unknown>[]): string => {
+    if (!hasData) return 'COST PER ACTION';
+    
+    const actionBreakdowns = data.flatMap(item => item._actions_breakdown || []);
+    if (actionBreakdowns.length === 0) return 'COST PER ACTION';
+    
+    const actionTypeCounts: Record<string, number> = {};
+    actionBreakdowns.forEach((action: any) => {
+      if (action?.action_type) {
+        const value = typeof action.value === 'string' ? parseFloat(action.value) : (action.value || 0);
+        actionTypeCounts[action.action_type] = (actionTypeCounts[action.action_type] || 0) + value;
+      }
+    });
+    
+    const mostCommonAction = Object.entries(actionTypeCounts).reduce((max, [type, count]) => 
+      count > max[1] ? [type, count] : max, ['', 0])[0];
+    
+    if (!mostCommonAction) return 'COST PER ACTION';
+    
+    return `COST PER ${mostCommonAction.replace(/_/g, ' ').toUpperCase()}`;
+  };
+
+  // Get metric display info with context-aware labels for actions
   const getMetricDisplay = (metric: string) => {
     const displays: Record<string, { label: string, format: (n: number) => string }> = {
       impressions: { label: 'TOTAL IMPRESSIONS', format: (n) => Math.round(n).toLocaleString() },
@@ -29,8 +76,14 @@ function generateCustomizedReport(data: Record<string, unknown>[], summary: stri
       frequency: { label: 'AVERAGE FREQUENCY', format: (n) => n.toFixed(2) },
       cost_per_conversion: { label: 'COST PER CONVERSION', format: (n) => `$${n.toFixed(2)}` },
       conversion_rate: { label: 'CONVERSION RATE', format: (n) => `${n.toFixed(2)}%` },
-      actions: { label: 'TOTAL ACTIONS', format: (n) => n.toFixed(2) },
-      cost_per_action_type: { label: 'COST PER ACTION', format: (n) => `$${n.toFixed(2)}` },
+      actions: { 
+        label: getMostCommonActionLabel(data),
+        format: (n) => Math.round(n).toLocaleString() 
+      },
+      cost_per_action_type: { 
+        label: getMostCommonActionCostLabel(data),
+        format: (n) => `$${n.toFixed(2)}` 
+      },
       skan_app_install: { label: 'SKAN APP INSTALLS', format: (n) => Math.round(n).toString() },
       skan_cost_per_app_install: { label: 'SKAN COST PER INSTALL', format: (n) => `$${n.toFixed(2)}` },
       skan_purchase: { label: 'SKAN PURCHASES', format: (n) => Math.round(n).toString() },
@@ -64,6 +117,53 @@ function generateCustomizedReport(data: Record<string, unknown>[], summary: stri
         return totalClicks > 0 ? (totalConversions / totalClicks) * 100 : 0;
       case 'cost_per_conversion':
         return totalConversions > 0 ? totalSpend / totalConversions : 0;
+      case 'actions':
+        // Find most common action type and return its total
+        const actionBreakdowns = data.flatMap(item => item._actions_breakdown || []);
+        if (actionBreakdowns.length === 0) return calculateMetricTotal(data, metric);
+        
+        const actionTypeCounts: Record<string, number> = {};
+        actionBreakdowns.forEach((action: any) => {
+          if (action?.action_type) {
+            const value = typeof action.value === 'string' ? parseFloat(action.value) : (action.value || 0);
+            actionTypeCounts[action.action_type] = (actionTypeCounts[action.action_type] || 0) + value;
+          }
+        });
+        
+        const mostCommonAction = Object.entries(actionTypeCounts).reduce((max, [type, count]) => 
+          count > max[1] ? [type, count] : max, ['', 0]);
+        
+        return mostCommonAction[1];
+      case 'cost_per_action_type':
+        // Find average cost for most common action type
+        const costBreakdowns = data.flatMap(item => item._cost_per_action_breakdown || []);
+        if (costBreakdowns.length === 0) return calculateMetricTotal(data, metric);
+        
+        // Get most common action type from actions breakdown
+        const allActionBreakdowns = data.flatMap(item => item._actions_breakdown || []);
+        const allActionTypeCounts: Record<string, number> = {};
+        allActionBreakdowns.forEach((action: any) => {
+          if (action?.action_type) {
+            const value = typeof action.value === 'string' ? parseFloat(action.value) : (action.value || 0);
+            allActionTypeCounts[action.action_type] = (allActionTypeCounts[action.action_type] || 0) + value;
+          }
+        });
+        
+        const topActionType = Object.entries(allActionTypeCounts).reduce((max, [type, count]) => 
+          count > max[1] ? [type, count] : max, ['', 0])[0];
+        
+        if (!topActionType) return calculateMetricTotal(data, metric);
+        
+        // Find costs for this action type
+        const relevantCosts = costBreakdowns
+          .filter((cost: any) => cost?.action_type === topActionType)
+          .map((cost: any) => {
+            const value = typeof cost.value === 'string' ? parseFloat(cost.value) : (cost.value || 0);
+            return isNaN(value) ? 0 : value;
+          })
+          .filter(cost => cost > 0);
+        
+        return relevantCosts.length > 0 ? relevantCosts.reduce((sum, cost) => sum + cost, 0) / relevantCosts.length : 0;
       default:
         return calculateMetricTotal(data, metric);
     }
@@ -86,11 +186,16 @@ function generateCustomizedReport(data: Record<string, unknown>[], summary: stri
       const display = getMetricDisplay(metric);
       const value = calculateDerivedMetric(data, metric);
       
+      // Show "-" and "No data available" for zero values (indicating missing data)
+      const isNoData = value === 0;
+      const displayValue = isNoData ? '-' : display.format(value);
+      const deltaText = isNoData ? 'No data available' : `From ${data.length} records`;
+      
       return `
         <div class="kpi">
             <h3>${display.label}</h3>
-            <div class="v">${display.format(value)}</div>
-            <div class="delta">From ${data.length} records</div>
+            <div class="v">${displayValue}</div>
+            <div class="delta">${deltaText}</div>
         </div>
       `;
     });
@@ -609,12 +714,44 @@ function generateDataTable(data: Record<string, unknown>[]): string {
 
 function formatValue(value: unknown): string {
   if (value === null || value === undefined) return '-';
+  
   if (typeof value === 'number') {
     if (value % 1 !== 0) {
       return value.toFixed(2);
     }
     return value.toLocaleString();
   }
+  
+  // Handle arrays - especially action breakdowns
+  if (Array.isArray(value)) {
+    // For action breakdowns, show top 3 action types
+    if (value.length > 0 && value[0] && typeof value[0] === 'object' && 'action_type' in value[0]) {
+      const topActions = value
+        .map((action: any) => ({
+          type: action.action_type,
+          value: typeof action.value === 'string' ? parseFloat(action.value) : action.value
+        }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 3)
+        .map(action => `${action.type}: ${action.value}`)
+        .join(', ');
+      
+      return topActions + (value.length > 3 ? ` (+${value.length - 3} more)` : '');
+    }
+    
+    // For other arrays, join as strings
+    return value.join(', ');
+  }
+  
+  // Handle objects
+  if (typeof value === 'object') {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return '[Complex Object]';
+    }
+  }
+  
   return String(value);
 }
 
@@ -688,10 +825,17 @@ async function generateEmailOptimizedReport(data: Record<string, unknown>[], sum
           ${selectedMetrics.map(metric => {
             const display = getMetricDisplay(metric);
             const value = calculateDerivedMetric(data, metric);
+            
+            // Show "-" for zero values (indicating missing data)
+            const isNoData = value === 0;
+            const displayValue = isNoData ? '-' : display.format(value);
+            const labelText = isNoData ? 'NO DATA AVAILABLE' : display.label;
+            const labelColor = isNoData ? '#ef4444' : '#6b7280';
+            
             return `
               <td style="width: ${100/selectedMetrics.length}%; padding: 15px; background: #f8f9fa; border: 1px solid #e9ecef; text-align: center;">
-                <div style="font-size: 24px; font-weight: bold; color: #1f2937;">${display.format(value)}</div>
-                <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">${display.label}</div>
+                <div style="font-size: 24px; font-weight: bold; color: #1f2937;">${displayValue}</div>
+                <div style="font-size: 12px; color: ${labelColor}; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">${labelText}</div>
               </td>
             `;
           }).join('')}

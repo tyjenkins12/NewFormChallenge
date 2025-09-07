@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TIKTOK Insight Report — lifetime</title>
+    <meta name="description" content="Expert-level marketing report for TIKTOK campaigns with KPIs, trends, and actionable recommendations." />
+    <style>
+        :root{
+          --bg: #0b0d12;
+          --panel: #11151d;
+          --muted: #6b7280;
+          --text: #eef2ff;
+          --accent: #60a5fa;
+          --accent-2: #34d399;
+          --danger: #f87171;
+          --warning: #f59e0b;
+          --border: #1f2937;
+          --chip: #0f172a;
+          --shadow: 0 6px 24px rgba(0,0,0,.35);
+          --radius-xl: 18px;
+          --radius-lg: 14px;
+          --radius-md: 10px;
+        }
+        *{box-sizing:border-box}
+        html,body{margin:0;background:var(--bg);color:var(--text);font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";line-height:1.45}
+        a{color:var(--accent)}
+        .container{max-width:1200px;margin:0 auto;padding:28px}
+        header{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;margin-bottom:18px}
+        .brand{display:flex;gap:12px;align-items:center}
+        .badge{background:linear-gradient(135deg,#1f2937,#0b1220);border:1px solid var(--border);padding:8px 12px;border-radius:999px;color:var(--muted);font-weight:600;font-size:12px;letter-spacing:.4px}
+        .title h1{font-size:clamp(22px,3.2vw,30px);margin:0}
+        .subtitle{color:#9ca3af;font-size:14px;margin-top:4px}
+        .panel{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0));border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow)}
+        .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin:18px 0}
+        @media (max-width:520px){.kpis{grid-template-columns:1fr}}
+        .kpi{padding:18px;border-radius:var(--radius-lg);background:var(--panel);border:1px solid var(--border)}
+        .kpi h3{margin:0 0 6px 0;color:#cbd5e1;font-size:12px;letter-spacing:.6px;font-weight:700}
+        .kpi .v{font-size:clamp(20px,4vw,28px);font-weight:800}
+        .kpi .delta{margin-top:8px;font-size:12px;color:#94a3b8}
+        .summary-section{margin:18px 0}
+        .card{padding:18px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-xl)}
+        .card h2{margin:0 0 12px 0;font-size:18px}
+        .prose{color:#e5e7eb;font-size:14px}
+        .prose p{margin:.6em 0}
+        .prose h3{color:#cbd5e1;font-size:16px;margin:1em 0 .5em 0;font-weight:700}
+        .prose ul{margin:.8em 0;padding-left:1.2em}
+        .prose li{margin:.3em 0}
+        .prose strong{color:#f8fafc;font-weight:600}
+        .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+        .chip{background:var(--chip);border:1px solid var(--border);padding:6px 10px;border-radius:999px;color:#94a3b8;font-size:12px}
+        .charts-section{margin:18px 0}
+        .charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+        @media (max-width:980px){.charts{grid-template-columns:1fr}}
+        canvas{background:transparent;border-radius:var(--radius-lg);border:1px solid var(--border);padding:8px}
+        .table-wrap{overflow:auto;border:1px solid var(--border);border-radius:var(--radius-xl)}
+        table{width:100%;border-collapse:separate;border-spacing:0;min-width:900px}
+        th,td{padding:12px 14px;text-align:right;border-bottom:1px solid var(--border);font-size:13px}
+        th:first-child, td:first-child{text-align:left}
+        thead th{position:sticky;top:0;background:#0e1420;z-index:1}
+        tbody tr:hover{background:rgba(255,255,255,.02)}
+        .pill{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid var(--border);background:#0b1220;color:#cbd5e1;font-size:12px}
+        footer{color:#94a3b8;font-size:12px;margin:22px 0 40px}
+        .note{color:#a3a3a3;font-size:12px;margin-top:6px}
+        
+        /* PDF-specific styles */
+        @media print {
+          .container { padding: 8px !important; }
+          .card, .charts .card { page-break-inside: avoid; margin-bottom: 12px; }
+          .kpis { page-break-inside: avoid; margin: 12px 0; }
+          .charts-section { page-break-inside: avoid; margin: 12px 0; }
+          .charts { grid-template-columns: 1fr 1fr !important; gap: 12px; }
+          .charts .card { margin-bottom: 0; }
+          .charts .card h3 { font-size: 16px; margin: 0 0 8px 0; }
+          canvas { page-break-inside: avoid; height: 320px !important; }
+          .table-wrap { overflow: visible; }
+          table { font-size: 11px; page-break-inside: auto; }
+          th, td { padding: 8px 10px; }
+          tbody tr { page-break-inside: avoid; }
+          thead { display: table-header-group; }
+          header { margin-bottom: 8px; }
+          .summary-section { page-break-inside: avoid; margin: 12px 0; }
+          .summary-section .card { padding: 12px; }
+          footer { page-break-before: avoid; margin-top: 10px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <div class="brand">
+            <div class="badge" aria-label="Report Type">TIKTOK • Insight Report</div>
+            <div class="title">
+                <h1>Expert Marketing Performance Report</h1>
+                <div class="subtitle">Generated on <strong>9/7/2025</strong> • Window: <strong>lifetime</strong></div>
+            </div>
+        </div>
+        <div class="chips" role="list" aria-label="Meta Data">
+            <span class="chip" role="listitem">Platform: TIKTOK</span>
+            <span class="chip" role="listitem">Level: AUCTION_ADVERTISER</span>
+            <span class="chip" role="listitem">Metrics: 13 selected</span>
+        </div>
+    </header>
+
+    <!-- KPI Strip -->
+    <section class="kpis" aria-labelledby="kpi-heading">
+        <h2 id="kpi-heading" class="sr-only">Key Performance Indicators</h2>
+        
+        <div class="kpi">
+            <h3>TOTAL SPEND</h3>
+            <div class="v">$942593.05</div>
+            <div class="delta">From 2 records</div>
+        </div>
+      
+        <div class="kpi">
+            <h3>SKAN APP INSTALLS</h3>
+            <div class="v">300333</div>
+            <div class="delta">From 2 records</div>
+        </div>
+      
+        <div class="kpi">
+            <h3>CONVERSION RATE</h3>
+            <div class="v">-</div>
+            <div class="delta">No data available</div>
+        </div>
+      
+        <div class="kpi">
+            <h3>COST PER CONVERSION</h3>
+            <div class="v">-</div>
+            <div class="delta">No data available</div>
+        </div>
+      
+        <div class="kpi">
+            <h3>AVERAGE CPC</h3>
+            <div class="v">$0.82</div>
+            <div class="delta">From 2 records</div>
+        </div>
+      
+        <div class="kpi">
+            <h3>SKAN COST PER PURCHASE</h3>
+            <div class="v">$58.52</div>
+            <div class="delta">From 2 records</div>
+        </div>
+      
+        <div class="kpi">
+            <h3>SKAN COST PER INSTALL</h3>
+            <div class="v">$28.08</div>
+            <div class="delta">From 2 records</div>
+        </div>
+      
+        <div class="kpi">
+            <h3>TOTAL REACH</h3>
+            <div class="v">7,729,348</div>
+            <div class="delta">From 2 records</div>
+        </div>
+      
+        <div class="kpi">
+            <h3>TOTAL IMPRESSIONS</h3>
+            <div class="v">206,133,926</div>
+            <div class="delta">From 2 records</div>
+        </div>
+      
+        <div class="kpi">
+            <h3>TOTAL CLICKS</h3>
+            <div class="v">1,152,617</div>
+            <div class="delta">From 2 records</div>
+        </div>
+      
+        <div class="kpi">
+            <h3>AVERAGE CTR</h3>
+            <div class="v">0.56%</div>
+            <div class="delta">From 2 records</div>
+        </div>
+      
+        <div class="kpi">
+            <h3>AVERAGE FREQUENCY</h3>
+            <div class="v">35.91</div>
+            <div class="delta">From 2 records</div>
+        </div>
+      
+        <div class="kpi">
+            <h3>SKAN PURCHASES</h3>
+            <div class="v">15840</div>
+            <div class="delta">From 2 records</div>
+        </div>
+      
+    </section>
+
+    <!-- Summary -->
+    <section class="summary-section">
+        <article class="card">
+            <h2>Executive Summary</h2>
+            <div class="prose" id="exec-summary">
+                <h3>Performance Summary</h3>
+<p>The TIKTOK advertising campaign has generated a total spend of $942,593.05 with 206,133,926 impressions and 1,152,617 clicks, resulting in an overall CTR of 0.56%. Notably, the first advertiser performed significantly better than the second, with a CTR of 0.57% compared to 0.23% and a much lower CPC of $0.81 versus $1.37.</p>
+
+<h3>Notable Trends</h3>
+<p>The first advertiser achieved 299,708 app installs at a cost of $3.09 per install, while the second advertiser's performance was subpar, with only 625 installs at $24.98 each. The conversion rates also differ greatly, with the first advertiser at 0.57% and the second at 4.36%, although the second's low volume of conversions needs attention.</p>
+
+<h3>Actionable Recommendations</h3>
+<ul>
+    <li>Focus on optimizing the second advertiser's campaigns by testing different ad creatives and targeting to improve CTR and reduce CPC.</li>
+    <li>Consider reallocating budget towards the first advertiser's strategies that are yielding lower cost per app installs and higher engagement.</li>
+    <li>Analyze the audience segments for both advertisers to identify high-performing demographics and tailor campaigns accordingly.</li>
+</ul>
+            </div>
+            <div class="note">Report customized for TIKTOK AUCTION_ADVERTISER level with 13 selected metrics.</div>
+        </article>
+    </section>
+
+    <!-- Charts -->
+    <section class="charts-section">
+        <h2 style="margin: 0 0 12px 0; font-size: 18px; color: var(--text);">Performance Graphs</h2>
+        <div class="charts" aria-label="Charts">
+            <div class="card">
+                <h3>TOTAL SPEND & Related</h3>
+                <canvas id="chartPrimary" width="380" height="320" aria-label="Chart of primary selected metrics" role="img"></canvas>
+            </div>
+            
+            <div class="card">
+                <h3>CONVERSION RATE & Related</h3>
+                <canvas id="chartSecondary" width="380" height="320" aria-label="Chart of secondary metrics" role="img"></canvas>
+            </div>
+            
+        </div>
+    </section>
+
+    <!-- Detailed Table -->
+    <section class="card" style="margin-top:18px">
+        <h2>Detailed Data</h2>
+        <div class="table-wrap">
+            <table id="detail-table" aria-describedby="table-note">
+                <thead>
+                <tr>
+                    <th>ADVERTISER ID</th><th>SPEND</th><th>IMPRESSIONS</th><th>CLICKS</th><th>CTR</th><th>CPC</th><th>REACH</th><th>FREQUENCY</th><th>CONVERSIONS</th><th>COST PER CONVERSION</th><th>CONVERSION RATE</th><th>SKAN APP INSTALL</th><th>SKAN COST PER APP INSTALL</th><th>SKAN PURCHASE</th><th>SKAN COST PER PURCHASE</th>
+                </tr>
+                </thead>
+                <tbody id="table-body">
+                    
+      <tr>
+        <td>7148082487770628098</td><td>926979.190</td><td>201125187</td><td>1141245</td><td>0.57</td><td>0.810</td><td>6139111</td><td>32.76</td><td>-</td><td>143.320</td><td>0.57</td><td>299708</td><td>3.093</td><td>15840</td><td>58.521</td>
+      </tr>
+    
+      <tr>
+        <td>7106324338902630402</td><td>15613.856079590458</td><td>5008739</td><td>11372</td><td>0.23</td><td>1.3730121863652576</td><td>1590237</td><td>3.15</td><td>-</td><td>31.47954546567934</td><td>4.36</td><td>625</td><td>24.982169438927087</td><td>0</td><td>0</td>
+      </tr>
+    
+                </tbody>
+            </table>
+        </div>
+        <div id="table-note" class="note">Data shows 2 records from TIKTOK API for lifetime period.</div>
+    </section>
+
+    <footer>
+        © 2025 Scheduled Insight Reports • Generated for TIKTOK • 9/7/2025.
+    </footer>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+<script>
+    // Chart data from server
+    const chartData = {"primary":{"labels":["Item 1","Item 2"],"datasets":[{"label":"TOTAL SPEND","data":[926979.19,15613.856079590458],"backgroundColor":"#60a5fa80","borderColor":"#60a5fa","borderWidth":2,"type":"bar","tension":0.3},{"label":"SKAN APP INSTALLS","data":[299708,625],"backgroundColor":"#34d39980","borderColor":"#34d399","borderWidth":2,"type":"line","tension":0.3},{"label":"TOTAL REACH","data":[6139111,1590237],"backgroundColor":"#f59e0b80","borderColor":"#f59e0b","borderWidth":2,"type":"line","tension":0.3}],"title":"TOTAL SPEND & Related"},"secondary":{"labels":["Item 1","Item 2"],"datasets":[{"label":"CONVERSION RATE","data":[0.57,4.36],"backgroundColor":"#f59e0b80","borderColor":"#f59e0b","borderWidth":2,"type":"bar","tension":0.3},{"label":"AVERAGE CPC","data":[0.81,1.3730121863652576],"backgroundColor":"#f8717180","borderColor":"#f87171","borderWidth":2,"type":"line","tension":0.3},{"label":"SKAN COST PER INSTALL","data":[3.093,24.982169438927087],"backgroundColor":"#a78bfa80","borderColor":"#a78bfa","borderWidth":2,"type":"bar","tension":0.3}],"title":"CONVERSION RATE & Related"}};
+    const hasData = true;
+    
+    if (hasData && chartData.primary.labels && chartData.primary.labels.length > 0) {
+        // Primary metrics chart
+        if (chartData.primary.datasets.length > 0) {
+            const ctxPrimary = document.getElementById('chartPrimary').getContext('2d');
+            new Chart(ctxPrimary, {
+                type: 'bar',
+                data: {
+                    labels: chartData.primary.labels,
+                    datasets: chartData.primary.datasets
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { 
+                            display: true,
+                            position: 'top'
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Secondary metrics chart (only if we have secondary metrics)
+        if (chartData.secondary.datasets.length > 0) {
+            const ctxSecondary = document.getElementById('chartSecondary').getContext('2d');
+            new Chart(ctxSecondary, {
+                type: 'bar',
+                data: {
+                    labels: chartData.secondary.labels,
+                    datasets: chartData.secondary.datasets
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { 
+                            display: true,
+                            position: 'top'
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    } else {
+        // Show "No data" message in charts
+        const chartContainers = document.querySelectorAll('.charts .card');
+        chartContainers.forEach(container => {
+            const canvas = container.querySelector('canvas');
+            if (canvas) {
+                canvas.style.display = 'none';
+                const noDataMsg = document.createElement('div');
+                noDataMsg.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 60px 20px;">No data available for selected configuration</p>';
+                container.appendChild(noDataMsg);
+            }
+        });
+    }
+</script>
+</body>
+</html>

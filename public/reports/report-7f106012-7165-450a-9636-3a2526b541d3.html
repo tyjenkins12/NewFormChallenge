@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>META Insight Report — Last 7 Days</title>
+    <meta name="description" content="Expert-level marketing report for META campaigns with KPIs, trends, and actionable recommendations." />
+    <style>
+        :root{
+          --bg: #0b0d12;
+          --panel: #11151d;
+          --muted: #6b7280;
+          --text: #eef2ff;
+          --accent: #60a5fa;
+          --accent-2: #34d399;
+          --danger: #f87171;
+          --warning: #f59e0b;
+          --border: #1f2937;
+          --chip: #0f172a;
+          --shadow: 0 6px 24px rgba(0,0,0,.35);
+          --radius-xl: 18px;
+          --radius-lg: 14px;
+          --radius-md: 10px;
+        }
+        *{box-sizing:border-box}
+        html,body{margin:0;background:var(--bg);color:var(--text);font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";line-height:1.45}
+        a{color:var(--accent)}
+        .container{max-width:1200px;margin:0 auto;padding:28px}
+        header{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;margin-bottom:18px}
+        .brand{display:flex;gap:12px;align-items:center}
+        .badge{background:linear-gradient(135deg,#1f2937,#0b1220);border:1px solid var(--border);padding:8px 12px;border-radius:999px;color:var(--muted);font-weight:600;font-size:12px;letter-spacing:.4px}
+        .title h1{font-size:clamp(22px,3.2vw,30px);margin:0}
+        .subtitle{color:#9ca3af;font-size:14px;margin-top:4px}
+        .panel{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0));border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow)}
+        .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin:18px 0}
+        @media (max-width:520px){.kpis{grid-template-columns:1fr}}
+        .kpi{padding:18px;border-radius:var(--radius-lg);background:var(--panel);border:1px solid var(--border)}
+        .kpi h3{margin:0 0 6px 0;color:#cbd5e1;font-size:12px;letter-spacing:.6px;font-weight:700}
+        .kpi .v{font-size:clamp(20px,4vw,28px);font-weight:800}
+        .kpi .delta{margin-top:8px;font-size:12px;color:#94a3b8}
+        .summary-section{margin:18px 0}
+        .card{padding:18px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-xl)}
+        .card h2{margin:0 0 12px 0;font-size:18px}
+        .prose{color:#e5e7eb;font-size:14px}
+        .prose p{margin:.6em 0}
+        .prose h3{color:#cbd5e1;font-size:16px;margin:1em 0 .5em 0;font-weight:700}
+        .prose ul{margin:.8em 0;padding-left:1.2em}
+        .prose li{margin:.3em 0}
+        .prose strong{color:#f8fafc;font-weight:600}
+        .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+        .chip{background:var(--chip);border:1px solid var(--border);padding:6px 10px;border-radius:999px;color:#94a3b8;font-size:12px}
+        .charts-section{margin:18px 0}
+        .charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+        @media (max-width:980px){.charts{grid-template-columns:1fr}}
+        canvas{background:transparent;border-radius:var(--radius-lg);border:1px solid var(--border);padding:8px}
+        .table-wrap{overflow:auto;border:1px solid var(--border);border-radius:var(--radius-xl)}
+        table{width:100%;border-collapse:separate;border-spacing:0;min-width:900px}
+        th,td{padding:12px 14px;text-align:right;border-bottom:1px solid var(--border);font-size:13px}
+        th:first-child, td:first-child{text-align:left}
+        thead th{position:sticky;top:0;background:#0e1420;z-index:1}
+        tbody tr:hover{background:rgba(255,255,255,.02)}
+        .pill{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid var(--border);background:#0b1220;color:#cbd5e1;font-size:12px}
+        footer{color:#94a3b8;font-size:12px;margin:22px 0 40px}
+        .note{color:#a3a3a3;font-size:12px;margin-top:6px}
+        
+        /* PDF-specific styles */
+        @media print {
+          .container { padding: 8px !important; }
+          .card, .charts .card { page-break-inside: avoid; margin-bottom: 12px; }
+          .kpis { page-break-inside: avoid; margin: 12px 0; }
+          .charts-section { page-break-inside: avoid; margin: 12px 0; }
+          .charts { grid-template-columns: 1fr 1fr !important; gap: 12px; }
+          .charts .card { margin-bottom: 0; }
+          .charts .card h3 { font-size: 16px; margin: 0 0 8px 0; }
+          canvas { page-break-inside: avoid; height: 320px !important; }
+          .table-wrap { overflow: visible; }
+          table { font-size: 11px; page-break-inside: auto; }
+          th, td { padding: 8px 10px; }
+          tbody tr { page-break-inside: avoid; }
+          thead { display: table-header-group; }
+          header { margin-bottom: 8px; }
+          .summary-section { page-break-inside: avoid; margin: 12px 0; }
+          .summary-section .card { padding: 12px; }
+          footer { page-break-before: avoid; margin-top: 10px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <div class="brand">
+            <div class="badge" aria-label="Report Type">META • Insight Report</div>
+            <div class="title">
+                <h1>Expert Marketing Performance Report</h1>
+                <div class="subtitle">Generated on <strong>9/7/2025</strong> • Window: <strong>Last 7 Days</strong></div>
+            </div>
+        </div>
+        <div class="chips" role="list" aria-label="Meta Data">
+            <span class="chip" role="listitem">Platform: META</span>
+            <span class="chip" role="listitem">Level: adset</span>
+            <span class="chip" role="listitem">Metrics: 2 selected</span>
+        </div>
+    </header>
+
+    <!-- KPI Strip -->
+    <section class="kpis" aria-labelledby="kpi-heading">
+        <h2 id="kpi-heading" class="sr-only">Key Performance Indicators</h2>
+        
+        <div class="kpi">
+            <h3>PAGE ENGAGEMENT</h3>
+            <div class="v">9,131</div>
+            <div class="delta">Most common: page engagement</div>
+        </div>
+      
+        <div class="kpi">
+            <h3>COST PER PAGE ENGAGEMENT</h3>
+            <div class="v">$0.10</div>
+            <div class="delta">From 19 records</div>
+        </div>
+      
+    </section>
+
+    <!-- Summary -->
+    <section class="summary-section">
+        <article class="card">
+            <h2>Executive Summary</h2>
+            <div class="prose" id="exec-summary">
+                <h3>Performance Summary</h3>
+<p>The META advertising campaign data indicates a total of 19 records with a diverse range of actions across different demographics. The overall cost per action (CPA) averages around $30.76, with actions primarily driven by post engagements and video views. Notably, gender-specific data shows variations in engagement and costs.</p>
+
+<h3>Notable Trends or Patterns</h3>
+<ul>
+    <li>The male demographic (ages 25-34) exhibits the highest engagement with 18,522 actions, albeit with a high CPA of $30.76.</li>
+    <li>Females aged 18-24 show a low CPA for post engagements and video views, indicating effective content targeting.</li>
+    <li>Actions such as mobile app installs and purchases have varying costs, with some action types being significantly more expensive than others.</li>
+</ul>
+
+<h3>Actionable Recommendations</h3>
+<ul>
+    <li>Focus on optimizing ad content for the 18-24 female demographic to leverage their lower CPA and high engagement rates.</li>
+    <li>Analyze and refine targeting strategies for the 25-34 male demographic to reduce the high CPA associated with purchases.</li>
+    <li>Experiment with different ad formats and placements, particularly for video content, to enhance engagement and reduce costs further.</li>
+</ul>
+            </div>
+            <div class="note">Report customized for META adset level with 2 selected metrics.</div>
+        </article>
+    </section>
+
+    <!-- Charts -->
+    <section class="charts-section">
+        <h2 style="margin: 0 0 12px 0; font-size: 18px; color: var(--text);">Performance Graphs</h2>
+        <div class="charts" aria-label="Charts">
+            <div class="card">
+                <h3>Volume Metrics</h3>
+                <canvas id="chartPrimary" width="380" height="320" aria-label="Chart of primary selected metrics" role="img"></canvas>
+            </div>
+            
+            <div class="card">
+                <h3>Monetary Metrics</h3>
+                <canvas id="chartSecondary" width="380" height="320" aria-label="Chart of secondary metrics" role="img"></canvas>
+            </div>
+            
+        </div>
+    </section>
+
+    <!-- Detailed Table -->
+    <section class="card" style="margin-top:18px">
+        <h2>Detailed Data</h2>
+        <div class="table-wrap">
+            <table id="detail-table" aria-describedby="table-note">
+                <thead>
+                <tr>
+                    <th>DATE START</th><th>DATE STOP</th><th>AGE</th><th>GENDER</th><th> ACTIONS BREAKDOWN</th><th> COST PER ACTION BREAKDOWN</th><th>ACTIONS</th><th>COST PER ACTION TYPE</th>
+                </tr>
+                </thead>
+                <tbody id="table-body">
+                    
+      <tr>
+        <td>2025-08-31</td><td>2025-09-06</td><td>18-24</td><td>female</td><td>post_engagement: 239, page_engagement: 239, video_view: 229 (+14 more)</td><td>omni_purchase: 14.73737, initiate_checkout: 14.73737, purchase: 14.73737 (+7 more)</td><td>1,197</td><td>6.37</td>
+      </tr>
+    
+      <tr>
+        <td>2025-08-31</td><td>2025-09-06</td><td>18-24</td><td>male</td><td>omni_activate_app: 2211, app_custom_event.fb_mobile_activate_app: 2211, post_engagement: 1541 (+21 more)</td><td>omni_purchase: 121.453146, omni_complete_registration: 121.453146, omni_app_install: 121.453146 (+11 more)</td><td>10,038</td><td>47.90</td>
+      </tr>
+    
+      <tr>
+        <td>2025-08-31</td><td>2025-09-06</td><td>18-24</td><td>unknown</td><td>post_engagement: 26, page_engagement: 26, video_view: 24 (+5 more)</td><td>link_click: 1.211428, post_interaction_gross: 1.211428, omni_activate_app: 0.093187 (+3 more)</td><td>105</td><td>0.44</td>
+      </tr>
+    
+      <tr>
+        <td>2025-08-31</td><td>2025-09-06</td><td>25-34</td><td>female</td><td>page_engagement: 600, post_engagement: 599, video_view: 572 (+13 more)</td><td>like: 79.383562, post_interaction_gross: 79.383562, omni_app_install: 39.691781 (+8 more)</td><td>2,207</td><td>23.44</td>
+      </tr>
+    
+      <tr>
+        <td>2025-08-31</td><td>2025-09-06</td><td>25-34</td><td>male</td><td>omni_activate_app: 3915, app_custom_event.fb_mobile_activate_app: 3915, post_engagement: 2859 (+22 more)</td><td>omni_complete_registration: 87.236151, omni_app_install: 87.236151, complete_registration: 87.236151 (+11 more)</td><td>18,522</td><td>30.76</td>
+      </tr>
+    
+      <tr>
+        <td>2025-08-31</td><td>2025-09-06</td><td>25-34</td><td>unknown</td><td>post_engagement: 22, page_engagement: 22, video_view: 21 (+6 more)</td><td>post_interaction_gross: 2.412844, omni_custom: 0.301605, omni_activate_app: 0.126992 (+3 more)</td><td>121</td><td>0.53</td>
+      </tr>
+    
+      <tr>
+        <td>2025-08-31</td><td>2025-09-06</td><td>35-44</td><td>female</td><td>post_engagement: 503, page_engagement: 503, video_view: 477 (+22 more)</td><td>omni_purchase: 33.194123, initiate_checkout: 33.194123, omni_complete_registration: 33.194123 (+11 more)</td><td>1,878</td><td>17.75</td>
+      </tr>
+    
+      <tr>
+        <td>2025-08-31</td><td>2025-09-06</td><td>35-44</td><td>male</td><td>post_engagement: 1429, page_engagement: 1429, video_view: 1389 (+21 more)</td><td>omni_purchase: 71.944795, purchase: 71.944795, initiate_checkout: 47.963197 (+11 more)</td><td>7,625</td><td>25.87</td>
+      </tr>
+    
+      <tr>
+        <td>2025-08-31</td><td>2025-09-06</td><td>35-44</td><td>unknown</td><td>post_engagement: 21, page_engagement: 21, video_view: 20 (+5 more)</td><td>omni_custom: 2.082454, link_click: 2.082454, omni_activate_app: 0.520614 (+3 more)</td><td>73</td><td>0.83</td>
+      </tr>
+    
+      <tr>
+        <td>2025-08-31</td><td>2025-09-06</td><td>45-54</td><td>female</td><td>post_engagement: 308, page_engagement: 308, video_view: 301 (+5 more)</td><td>omni_custom: 35.191477, link_click: 5.027354, omni_activate_app: 0.718193 (+3 more)</td><td>1,024</td><td>6.88</td>
+      </tr>
+    
+      <tr>
+        <td>2025-08-31</td><td>2025-09-06</td><td>45-54</td><td>male</td><td>post_engagement: 664, page_engagement: 664, video_view: 645 (+21 more)</td><td>omni_purchase: 62.563738, post_interaction_gross: 62.563738, omni_complete_registration: 62.563738 (+11 more)</td><td>3,548</td><td>27.12</td>
+      </tr>
+    
+      <tr>
+        <td>2025-08-31</td><td>2025-09-06</td><td>45-54</td><td>unknown</td><td>post_engagement: 9, page_engagement: 9, video_view: 9</td><td>video_view: 0.122366, post_engagement: 0.122366, page_engagement: 0.122366</td><td>27</td><td>0.12</td>
+      </tr>
+    
+      <tr>
+        <td>2025-08-31</td><td>2025-09-06</td><td>55-64</td><td>female</td><td>post_engagement: 182, page_engagement: 182, video_view: 176 (+7 more)</td><td>link_click: 6.594439, post_interaction_gross: 6.594439, omni_custom: 2.472915 (+4 more)</td><td>659</td><td>2.34</td>
+      </tr>
+    
+      <tr>
+        <td>2025-08-31</td><td>2025-09-06</td><td>55-64</td><td>male</td><td>page_engagement: 371, post_engagement: 370, video_view: 359 (+8 more)</td><td>like: 43.090787, post_interaction_gross: 21.545394, link_click: 4.787865 (+5 more)</td><td>1,674</td><td>8.81</td>
+      </tr>
+    
+      <tr>
+        <td>2025-08-31</td><td>2025-09-06</td><td>55-64</td><td>unknown</td><td>post_engagement: 5, page_engagement: 5, video_view: 5 (+2 more)</td><td>omni_activate_app: 0.690814, video_view: 0.138163, post_engagement: 0.138163 (+1 more)</td><td>17</td><td>0.28</td>
+      </tr>
+    
+                </tbody>
+            </table>
+        </div>
+        <div id="table-note" class="note">Data shows 19 records from META API for last7 period.</div>
+    </section>
+
+    <footer>
+        © 2025 Scheduled Insight Reports • Generated for META • 9/7/2025.
+    </footer>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+<script>
+    // Chart data from server
+    const chartData = {"primary":{"labels":["2025-08-31","2025-08-31","2025-08-31","2025-08-31","2025-08-31","2025-08-31","2025-08-31","2025-08-31","2025-08-31","2025-08-31"],"datasets":[{"label":"PAGE ENGAGEMENT","data":[1197,10038,105,2207,18522,121,1878,7625,73,1024],"backgroundColor":"#60a5fa80","borderColor":"#60a5fa","borderWidth":2,"type":"bar","tension":0.3}],"title":"Volume Metrics"},"secondary":{"labels":["2025-08-31","2025-08-31","2025-08-31","2025-08-31","2025-08-31","2025-08-31","2025-08-31","2025-08-31","2025-08-31","2025-08-31"],"datasets":[{"label":"COST PER PAGE ENGAGEMENT","data":[6.369553000000001,47.902312,0.4432841666666667,23.443371090909093,30.75615985714286,0.5292813333333334,17.75444078571428,25.868341428571426,0.8313291666666668,6.8804091666666665],"backgroundColor":"#f59e0b80","borderColor":"#f59e0b","borderWidth":2,"type":"bar","tension":0.3}],"title":"Monetary Metrics"}};
+    const hasData = true;
+    
+    if (hasData && chartData.primary.labels && chartData.primary.labels.length > 0) {
+        // Primary metrics chart
+        if (chartData.primary.datasets.length > 0) {
+            const ctxPrimary = document.getElementById('chartPrimary').getContext('2d');
+            new Chart(ctxPrimary, {
+                type: 'bar',
+                data: {
+                    labels: chartData.primary.labels,
+                    datasets: chartData.primary.datasets
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { 
+                            display: true,
+                            position: 'top'
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Secondary metrics chart (only if we have secondary metrics)
+        if (chartData.secondary.datasets.length > 0) {
+            const ctxSecondary = document.getElementById('chartSecondary').getContext('2d');
+            new Chart(ctxSecondary, {
+                type: 'bar',
+                data: {
+                    labels: chartData.secondary.labels,
+                    datasets: chartData.secondary.datasets
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { 
+                            display: true,
+                            position: 'top'
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    } else {
+        // Show "No data" message in charts
+        const chartContainers = document.querySelectorAll('.charts .card');
+        chartContainers.forEach(container => {
+            const canvas = container.querySelector('canvas');
+            if (canvas) {
+                canvas.style.display = 'none';
+                const noDataMsg = document.createElement('div');
+                noDataMsg.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 60px 20px;">No data available for selected configuration</p>';
+                container.appendChild(noDataMsg);
+            }
+        });
+    }
+</script>
+</body>
+</html>

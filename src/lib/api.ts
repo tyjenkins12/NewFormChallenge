@@ -112,14 +112,70 @@ export async function fetchAdData(config: ReportConfig, usePartitioning: boolean
       // Flatten metrics object to top level
       if (item.metrics && typeof item.metrics === 'object') {
         Object.entries(item.metrics).forEach(([key, value]) => {
-          flatItem[key] = value;
+          // Ensure we're storing primitive values, not objects
+          if (typeof value === 'object' && value !== null) {
+            console.log(`🔍 Complex metric detected - ${key}:`, JSON.stringify(value, null, 2));
+            
+            // Special handling for actions metric (often an array of action objects)
+            if (key === 'actions' && Array.isArray(value)) {
+              // Sum up all action values or get the first meaningful number
+              const totalActions = value.reduce((sum, action) => {
+                if (typeof action === 'number') return sum + action;
+                if (typeof action === 'object' && action !== null) {
+                  if ('value' in action && typeof action.value === 'number') return sum + action.value;
+                  if ('count' in action && typeof action.count === 'number') return sum + action.count;
+                  if ('total' in action && typeof action.total === 'number') return sum + action.total;
+                }
+                return sum;
+              }, 0);
+              flatItem[key] = totalActions;
+            }
+            // Special handling for cost_per_action_type (often an object with action types)
+            else if (key === 'cost_per_action_type' && typeof value === 'object') {
+              // Try to get a meaningful cost value
+              if ('value' in value) {
+                flatItem[key] = value.value;
+              } else if ('cost' in value) {
+                flatItem[key] = value.cost;
+              } else if ('average' in value) {
+                flatItem[key] = value.average;
+              } else {
+                // If it's an object with multiple action types, take the first numeric value
+                const firstNumericValue = Object.values(value).find(v => typeof v === 'number');
+                flatItem[key] = firstNumericValue || 0;
+              }
+            }
+            // Generic object handling
+            else if ('value' in value) {
+              flatItem[key] = value.value;
+            } else if ('total' in value) {
+              flatItem[key] = value.total;
+            } else if ('count' in value) {
+              flatItem[key] = value.count;
+            } else if ('amount' in value) {
+              flatItem[key] = value.amount;
+            } else {
+              // For completely unknown structures, try to extract first numeric value
+              const numericValue = Object.values(value).find(v => typeof v === 'number');
+              flatItem[key] = numericValue || 0;
+              console.log(`⚠️  Unknown object structure for ${key}, using fallback value:`, numericValue || 0);
+            }
+          } else {
+            flatItem[key] = value;
+          }
         });
       }
       
       // Flatten dimensions object to top level
       if (item.dimensions && typeof item.dimensions === 'object') {
         Object.entries(item.dimensions).forEach(([key, value]) => {
-          flatItem[key] = value;
+          // Ensure we're storing primitive values, not objects
+          if (typeof value === 'object' && value !== null) {
+            // If it's still an object, convert to string
+            flatItem[key] = String(value);
+          } else {
+            flatItem[key] = value;
+          }
         });
       }
       
@@ -145,7 +201,101 @@ export async function fetchAdData(config: ReportConfig, usePartitioning: boolean
     return filteredData;
   }
   
-  // Return array as-is for other platforms (Meta)
+  // Transform Meta data to handle complex objects like actions and cost_per_action_type
+  if (config.platform === 'meta') {
+    console.log('🔧 API Transform: Meta platform detected, processing data...');
+    console.log('🔧 API Transform: Data array length:', dataArray.length);
+    console.log('🔧 API Transform: First item structure:', dataArray[0] ? Object.keys(dataArray[0]) : 'No data');
+    
+    const transformedData = dataArray.map((item, index) => {
+      const flatItem: Record<string, unknown> = { ...item };
+      
+      if (index === 0) {
+        console.log('🔧 API Transform: Processing first item:', JSON.stringify(item, null, 2));
+      }
+      
+      // Handle complex Meta metrics
+      Object.entries(item).forEach(([key, value]) => {
+        if (typeof value === 'object' && value !== null) {
+          console.log(`🔍 Complex Meta metric detected - ${key}:`, JSON.stringify(value, null, 2));
+          
+          // Special handling for actions (array of action objects)
+          if (key === 'actions' && Array.isArray(value)) {
+            // Store the full actions array for later analysis
+            flatItem['_actions_breakdown'] = value;
+            
+            const totalActions = value.reduce((sum, action) => {
+              if (typeof action === 'number') return sum + action;
+              if (typeof action === 'object' && action !== null) {
+                if ('value' in action) {
+                  const numValue = typeof action.value === 'string' ? parseFloat(action.value) : action.value;
+                  return sum + (typeof numValue === 'number' && !isNaN(numValue) ? numValue : 0);
+                }
+                if ('count' in action) {
+                  const numValue = typeof action.count === 'string' ? parseFloat(action.count) : action.count;
+                  return sum + (typeof numValue === 'number' && !isNaN(numValue) ? numValue : 0);
+                }
+                if ('total' in action) {
+                  const numValue = typeof action.total === 'string' ? parseFloat(action.total) : action.total;
+                  return sum + (typeof numValue === 'number' && !isNaN(numValue) ? numValue : 0);
+                }
+              }
+              return sum;
+            }, 0);
+            flatItem[key] = totalActions;
+          }
+          // Special handling for cost_per_action_type
+          else if (key === 'cost_per_action_type' && Array.isArray(value)) {
+            // Store the full cost_per_action_type array for later analysis
+            flatItem['_cost_per_action_breakdown'] = value;
+            
+            // If it's an array, sum up or average the costs
+            const costs = value
+              .map(cost => {
+                if (typeof cost === 'number') return cost;
+                if (typeof cost === 'object' && cost !== null) {
+                  if ('value' in cost) {
+                    const numValue = typeof cost.value === 'string' ? parseFloat(cost.value) : cost.value;
+                    return typeof numValue === 'number' && !isNaN(numValue) ? numValue : 0;
+                  }
+                  if ('cost' in cost) {
+                    const numValue = typeof cost.cost === 'string' ? parseFloat(cost.cost) : cost.cost;
+                    return typeof numValue === 'number' && !isNaN(numValue) ? numValue : 0;
+                  }
+                  if ('average' in cost) {
+                    const numValue = typeof cost.average === 'string' ? parseFloat(cost.average) : cost.average;
+                    return typeof numValue === 'number' && !isNaN(numValue) ? numValue : 0;
+                  }
+                }
+                return 0;
+              })
+              .filter(cost => cost > 0);
+            
+            flatItem[key] = costs.length > 0 ? costs.reduce((sum, cost) => sum + cost, 0) / costs.length : 0;
+          }
+          else if (key === 'cost_per_action_type' && typeof value === 'object') {
+            // Handle as object
+            if ('value' in value) {
+              flatItem[key] = value.value;
+            } else if ('cost' in value) {
+              flatItem[key] = value.cost;
+            } else if ('average' in value) {
+              flatItem[key] = value.average;
+            } else {
+              const firstNumericValue = Object.values(value).find(v => typeof v === 'number');
+              flatItem[key] = firstNumericValue || 0;
+            }
+          }
+        }
+      });
+      
+      return flatItem;
+    });
+    
+    return transformedData;
+  }
+  
+  // Return array as-is for other platforms
   return dataArray;
 }
 
