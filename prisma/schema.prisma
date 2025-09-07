@@ -14,6 +14,7 @@ model ReportConfig {
   schedule     String   // cron expression
   enabled      Boolean  @default(true)
   allowedSites String[] // domain whitelist
+  tokenSettings Json?   // JWT token configuration for secure access
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

@@ -37,9 +37,12 @@ const Dashboard = () => {
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
   const [forceRender, setForceRender] = useState(0);
   const [pageRefreshTimeout, setPageRefreshTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [tokenSettings, setTokenSettings] = useState<any>(null);
+  const [isClient, setIsClient] = useState(false);
   
   // Load configuration from localStorage and fetch scheduler status
   useEffect(() => {
+    setIsClient(true);
     try {
       const stored = localStorage.getItem('reportConfig');
       if (stored) {
@@ -47,6 +50,8 @@ const Dashboard = () => {
         if (savedData.config) {
           setReportConfig(savedData.config);
         }
+        // Load token settings for security badge
+        setTokenSettings(savedData.tokenSettings);
       }
     } catch (error) {
       console.error('Error loading configuration:', error);
@@ -189,6 +194,24 @@ const Dashboard = () => {
             duration: "2.3s", // Simulated - could be tracked in scheduler
             recordsProcessed: status.status.lastError ? 0 : 1247 // 0 if error
           });
+          console.log('📊 Dashboard: Set lastRun data:', {
+            timestamp: new Date(status.status.lastRun).toLocaleString(),
+            hasError: !!status.status.lastError
+          });
+        } else if (status.runs && status.runs.length > 0) {
+          // Fallback: use the most recent run if lastRun timestamp is missing
+          const mostRecentRun = status.runs[status.runs.length - 1];
+          setLastRun({
+            timestamp: new Date(mostRecentRun.timestamp).toLocaleString(),
+            status: mostRecentRun.status,
+            duration: "2.3s", // Simulated
+            recordsProcessed: mostRecentRun.status === 'success' ? 1247 : 0
+          });
+          console.log('📊 Dashboard: Set lastRun data from runs array:', {
+            runId: mostRecentRun.id,
+            timestamp: new Date(mostRecentRun.timestamp).toLocaleString(),
+            status: mostRecentRun.status
+          });
         }
       }
     } catch (error) {
@@ -241,7 +264,6 @@ const Dashboard = () => {
     countdown: schedulerStatus?.status?.nextRun ? 
       getCountdown(schedulerStatus.status.nextRun) : 
       reportConfig?.cadence === 'manual' ? 'Manual' : 'N/A',
-    progress: getScheduleProgress()
   };
 
   // Debug logging for nextRun and latest report
@@ -255,24 +277,6 @@ const Dashboard = () => {
     reportPath: schedulerStatus?.status?.reportPath
   });
 
-  // Helper function to calculate schedule progress
-  function getScheduleProgress() {
-    if (!schedulerStatus?.status?.nextRun || !schedulerStatus?.status?.lastRun || reportConfig?.cadence === 'manual') {
-      return 0;
-    }
-
-    const now = new Date();
-    const lastRun = new Date(schedulerStatus.status.lastRun);
-    const nextRun = new Date(schedulerStatus.status.nextRun);
-    
-    const totalInterval = nextRun.getTime() - lastRun.getTime();
-    const elapsed = now.getTime() - lastRun.getTime();
-    
-    if (totalInterval <= 0) return 0;
-    
-    const progress = Math.min(Math.max((elapsed / totalInterval) * 100, 0), 100);
-    return Math.round(progress);
-  }
 
   // Helper function to calculate countdown
   function getCountdown(nextRunTime: string) {
@@ -338,16 +342,70 @@ const Dashboard = () => {
     }
   };
 
-  const handleCopyLink = () => {
-    const reportUrl = schedulerStatus?.status?.reportPath 
-      ? `${window.location.origin}${schedulerStatus.status.reportPath}`
-      : "No report available";
+  const handleCopyLink = async () => {
+    const reportPath = schedulerStatus?.status?.reportPath;
+    if (!reportPath) {
+      toast({
+        title: "No Report Available",
+        description: "Please generate a report first.",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    navigator.clipboard.writeText(reportUrl);
-    toast({
-      title: "Link Copied",
-      description: "Report link has been copied to your clipboard.",
-    });
+    // Handle both signed URLs and regular paths
+    let reportUrl;
+    if (reportPath.startsWith('http')) {
+      // It's already a full URL (signed URL)
+      reportUrl = reportPath;
+    } else {
+      // It's a path, add origin
+      reportUrl = `${window.location.origin}${reportPath}`;
+    }
+    
+    try {
+      // Check if clipboard API is available
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        await navigator.clipboard.writeText(reportUrl);
+        toast({
+          title: "Link Copied",
+          description: "Report link has been copied to your clipboard.",
+        });
+      } else {
+        // Fallback method for unsupported environments
+        const textArea = document.createElement('textarea');
+        textArea.value = reportUrl;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+          document.execCommand('copy');
+          toast({
+            title: "Link Copied",
+            description: "Report link has been copied to your clipboard.",
+          });
+        } catch (err) {
+          toast({
+            title: "Copy Failed",
+            description: "Could not copy link. Please copy manually: " + reportUrl,
+            variant: "destructive"
+          });
+        } finally {
+          document.body.removeChild(textArea);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to copy link:', error);
+      toast({
+        title: "Copy Failed",
+        description: "Could not copy link. Please copy manually: " + reportUrl,
+        variant: "destructive"
+      });
+    }
   };
 
   const getStatusIcon = (status: string) => {
@@ -486,15 +544,6 @@ const Dashboard = () => {
                   <span className="text-sm text-muted-foreground">Countdown</span>
                   <span className="text-sm font-medium text-accent">{nextRun.countdown}</span>
                 </div>
-                {reportConfig?.cadence !== 'manual' && reportConfig?.cadence && (
-                  <div className="pt-2">
-                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                      <span>Progress</span>
-                      <span>{nextRun.progress}%</span>
-                    </div>
-                    <Progress value={nextRun.progress} className="h-2" />
-                  </div>
-                )}
               </CardContent>
             </Card>
 
@@ -633,42 +682,28 @@ const Dashboard = () => {
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">Security</div>
                   <div className="flex items-center gap-2 mt-1">
-                    {/* Check if tokenSettings exists in localStorage */}
-                    {(() => {
-                      try {
-                        const stored = localStorage.getItem('reportConfig');
-                        const savedData = stored ? JSON.parse(stored) : null;
-                        const tokenSettings = savedData?.tokenSettings;
-                        
-                        if (tokenSettings?.enabled) {
-                          return (
-                            <>
-                              <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 border-green-200 flex items-center gap-1">
-                                <Lock className="h-3 w-3" />
-                                Secure tokens
-                              </Badge>
-                              <span className="text-xs text-muted-foreground">
-                                ({tokenSettings.expirationHours}h expiry)
-                              </span>
-                            </>
-                          );
-                        } else {
-                          return (
-                            <Badge variant="outline" className="text-xs flex items-center gap-1">
-                              <Unlock className="h-3 w-3" />
-                              Public access
-                            </Badge>
-                          );
-                        }
-                      } catch {
-                        return (
-                          <Badge variant="outline" className="text-xs flex items-center gap-1">
-                            <Unlock className="h-3 w-3" />
-                            Public access
-                          </Badge>
-                        );
-                      }
-                    })()}
+                    {!isClient ? (
+                      // Show placeholder during SSR to prevent hydration mismatch
+                      <Badge variant="outline" className="text-xs flex items-center gap-1">
+                        <Unlock className="h-3 w-3" />
+                        Loading...
+                      </Badge>
+                    ) : tokenSettings?.enabled ? (
+                      <>
+                        <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 border-green-200 flex items-center gap-1">
+                          <Lock className="h-3 w-3" />
+                          Secure tokens
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          ({tokenSettings.expirationHours}h expiry)
+                        </span>
+                      </>
+                    ) : (
+                      <Badge variant="outline" className="text-xs flex items-center gap-1">
+                        <Unlock className="h-3 w-3" />
+                        Public access
+                      </Badge>
+                    )}
                   </div>
                 </div>
                 <div>

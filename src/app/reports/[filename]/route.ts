@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { reportAuthTokens } from '@/lib/auth-tokens';
+import { db } from '@/lib/db';
 import path from 'path';
 import fs from 'fs/promises';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { filename: string } }
+  { params }: { params: Promise<{ filename: string }> }
 ) {
   try {
-    const { filename } = params;
+    const { filename } = await params;
     const url = new URL(request.url);
     
     // Extract report ID and type from filename (e.g., "report-abc123.html" -> id: "abc123", type: "html")
@@ -19,59 +20,108 @@ export async function GET(
     
     const [, reportId, reportType] = match;
     
-    // Check if tokens are required (feature can be disabled)
-    if (!reportAuthTokens.areTokensRequired()) {
-      // If tokens are not required, serve the file directly without validation
-      return await serveReportFile(filename);
-    }
-    
     // Extract token from query parameters
     const token = url.searchParams.get('token');
     
-    if (!token) {
+    // New approach: If a token is provided, always validate it
+    // If no token is provided, check if tokens are globally required
+    if (token) {
+      // Token provided - validate it regardless of global settings
+      const decodedToken = reportAuthTokens.verifyToken(token);
+      
+      if (!decodedToken) {
+        return NextResponse.json({ 
+          error: 'Invalid or expired token',
+          message: 'The access token is invalid or has expired. Please request a new signed URL.'
+        }, { status: 403 });
+      }
+      
+      // Validate token matches the requested report
+      if (decodedToken.reportId !== reportId) {
+        return NextResponse.json({ 
+          error: 'Token mismatch',
+          message: 'The access token is not valid for this report.'
+        }, { status: 403 });
+      }
+      
+      // Validate token matches the requested file type
+      if (decodedToken.reportType !== reportType) {
+        return NextResponse.json({ 
+          error: 'File type mismatch',
+          message: `This token is only valid for ${decodedToken.reportType} files.`
+        }, { status: 403 });
+      }
+      
+      // Check permissions
+      if (!decodedToken.permissions.includes('read')) {
+        return NextResponse.json({ 
+          error: 'Insufficient permissions',
+          message: 'This token does not have read permissions for this report.'
+        }, { status: 403 });
+      }
+      
+      // Token is valid, serve the file
+      console.log(`✅ Token validated for user ${decodedToken.userId || 'anonymous'} accessing ${reportId}.${reportType}`);
+      return await serveReportFile(filename);
+    }
+    
+    // No token provided - check if tokens are required for this specific report
+    // First check global settings (might be temporarily set during report generation)
+    const globalTokensRequired = reportAuthTokens.areTokensRequired();
+    
+    // Then check database for this specific report's token settings
+    let reportTokensRequired = false;
+    try {
+      console.log(`🔍 Looking up report in DB with ID: ${reportId}`);
+      
+      // Try to find the report in database by matching the reportId
+      const report = await db.report.findFirst({
+        where: { 
+          OR: [
+            { slug: `report-${reportId}` }, // Try slug format
+            { id: reportId } // Try direct ID match
+          ]
+        },
+        include: { 
+          config: {
+            select: { tokenSettings: true, id: true, name: true }
+          }
+        }
+      });
+      
+      console.log(`🔍 Database query result:`, report ? {
+        id: report.id,
+        slug: report.slug,
+        configId: report.config?.id,
+        configName: report.config?.name,
+        tokenSettings: report.config?.tokenSettings
+      } : 'No report found');
+      
+      if (report?.config?.tokenSettings) {
+        reportTokensRequired = (report.config.tokenSettings as any)?.enabled || false;
+        console.log(`🔍 Found report in DB: tokenSettings=${JSON.stringify(report.config.tokenSettings)}, enabled=${reportTokensRequired}`);
+      } else if (report) {
+        console.log(`🔍 Found report but no tokenSettings in config`);
+      } else {
+        console.log(`🔍 No report found in database for ID: ${reportId}`);
+      }
+    } catch (dbError) {
+      console.warn(`⚠️ Could not check database for report ${reportId}:`, dbError);
+    }
+    
+    const tokensRequired = globalTokensRequired || reportTokensRequired;
+    console.log(`🔍 Debug - Token check for ${filename}: global=${globalTokensRequired}, report=${reportTokensRequired}, final=${tokensRequired}`);
+    
+    if (tokensRequired) {
+      console.log(`🚫 Access denied - tokens required but none provided for ${filename}`);
       return NextResponse.json({ 
         error: 'Access token required',
         message: 'This report requires a valid access token. Please use the signed URL provided.'
       }, { status: 401 });
     }
     
-    // Verify the token
-    const decodedToken = reportAuthTokens.verifyToken(token);
-    
-    if (!decodedToken) {
-      return NextResponse.json({ 
-        error: 'Invalid or expired token',
-        message: 'The access token is invalid or has expired. Please request a new signed URL.'
-      }, { status: 403 });
-    }
-    
-    // Validate token matches the requested report
-    if (decodedToken.reportId !== reportId) {
-      return NextResponse.json({ 
-        error: 'Token mismatch',
-        message: 'The access token is not valid for this report.'
-      }, { status: 403 });
-    }
-    
-    // Validate token matches the requested file type
-    if (decodedToken.reportType !== reportType) {
-      return NextResponse.json({ 
-        error: 'File type mismatch',
-        message: `This token is only valid for ${decodedToken.reportType} files.`
-      }, { status: 403 });
-    }
-    
-    // Check permissions (basic read permission check)
-    if (!decodedToken.permissions.includes('read')) {
-      return NextResponse.json({ 
-        error: 'Insufficient permissions',
-        message: 'This token does not have read permissions for this report.'
-      }, { status: 403 });
-    }
-    
-    // Token is valid, serve the file
-    console.log(`✅ Token validated for user ${decodedToken.userId || 'anonymous'} accessing ${reportId}.${reportType}`);
-    
+    // No token provided and tokens not required - serve directly
+    console.log(`✅ Serving ${filename} without token validation (tokens not required)`);
     return await serveReportFile(filename);
     
   } catch (error) {
@@ -84,11 +134,11 @@ export async function GET(
 }
 
 /**
- * Serve the report file from the public/reports directory
+ * Serve the report file from the private/reports directory
  */
 async function serveReportFile(filename: string): Promise<NextResponse> {
   try {
-    const filePath = path.join(process.cwd(), 'public', 'reports', filename);
+    const filePath = path.join(process.cwd(), 'private', 'reports', filename);
     
     // Check if file exists
     try {
@@ -116,9 +166,9 @@ async function serveReportFile(filename: string): Promise<NextResponse> {
     headers.set('X-Frame-Options', 'DENY');
     headers.set('X-XSS-Protection', '1; mode=block');
     
-    // For PDFs, suggest filename for download
+    // For PDFs, force download instead of inline display
     if (filename.endsWith('.pdf')) {
-      headers.set('Content-Disposition', `inline; filename="${filename}"`);
+      headers.set('Content-Disposition', `attachment; filename="${filename}"`);
     }
     
     console.log(`📄 Serving report file: ${filename} (${fileBuffer.length} bytes)`);

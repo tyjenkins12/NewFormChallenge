@@ -356,14 +356,43 @@ function generateCustomizedReport(data: Record<string, unknown>[], summary: stri
 
   const chartData = generateChartData();
 
-  // Generate table headers based on available data keys
+  // Generate table headers based on selected metrics and standard columns
   const generateTableHeaders = (): string => {
     if (!hasData || data.length === 0) return '<th>No Data</th>';
     
-    const headers = Object.keys(data[0]);
-    return headers.map(header => 
+    // Standard dimensions that should always be shown
+    const standardHeaders = ['date_start', 'date_stop'];
+    
+    // Dimension fields that are not metrics (like age, gender, placement, etc.)
+    const commonDimensions = ['age', 'gender', 'placement', 'platform_position', 'publisher_platform', 'device_platform'];
+    const dimensionHeaders = Object.keys(data[0]).filter(key => 
+      key !== 'date_start' && key !== 'date_stop' && 
+      !config.metrics.includes(key) &&
+      !key.startsWith('_') && // Exclude internal fields
+      (commonDimensions.includes(key) || !isKnownMetric(key)) // Only include known dimensions or unknown fields that aren't metrics
+    );
+    
+    // Add selected metrics
+    const metricHeaders = config.metrics.filter(metric => 
+      Object.keys(data[0]).includes(metric)
+    );
+    
+    const allHeaders = [...standardHeaders, ...dimensionHeaders, ...metricHeaders];
+    const existingHeaders = allHeaders.filter(header => Object.keys(data[0]).includes(header));
+    
+    return existingHeaders.map(header => 
       `<th>${header.replace(/_/g, ' ').toUpperCase()}</th>`
     ).join('');
+  };
+
+  // Helper function to check if a field is a known metric (to exclude from dimensions)
+  const isKnownMetric = (field: string): boolean => {
+    const knownMetrics = [
+      'impressions', 'clicks', 'spend', 'conversions', 'ctr', 'cpc', 'reach', 'frequency',
+      'cost_per_conversion', 'conversion_rate', 'actions', 'cost_per_action_type',
+      'skan_app_install', 'skan_cost_per_app_install', 'skan_purchase', 'skan_cost_per_purchase'
+    ];
+    return knownMetrics.includes(field);
   };
 
   // Generate table rows
@@ -373,11 +402,30 @@ function generateCustomizedReport(data: Record<string, unknown>[], summary: stri
     }
     
     const maxRows = Math.min(data.length, 15); // Limit to 15 rows for PDF
-    const headers = Object.keys(data[0]);
+    
+    // Get the same headers as used in generateTableHeaders
+    const standardHeaders = ['date_start', 'date_stop'];
+    
+    // Dimension fields that are not metrics (like age, gender, placement, etc.)
+    const commonDimensions = ['age', 'gender', 'placement', 'platform_position', 'publisher_platform', 'device_platform'];
+    const dimensionHeaders = Object.keys(data[0]).filter(key => 
+      key !== 'date_start' && key !== 'date_stop' && 
+      !config.metrics.includes(key) &&
+      !key.startsWith('_') && // Exclude internal fields
+      (commonDimensions.includes(key) || !isKnownMetric(key)) // Only include known dimensions or unknown fields that aren't metrics
+    );
+    
+    // Add selected metrics
+    const metricHeaders = config.metrics.filter(metric => 
+      Object.keys(data[0]).includes(metric)
+    );
+    
+    const allHeaders = [...standardHeaders, ...dimensionHeaders, ...metricHeaders];
+    const existingHeaders = allHeaders.filter(header => Object.keys(data[0]).includes(header));
     
     return data.slice(0, maxRows).map(row => `
       <tr>
-        ${headers.map(header => `<td>${formatValue(row[header])}</td>`).join('')}
+        ${existingHeaders.map(header => `<td>${formatValue(row[header])}</td>`).join('')}
       </tr>
     `).join('');
   };
@@ -844,13 +892,41 @@ async function generateEmailOptimizedReport(data: Record<string, unknown>[], sum
     `;
   };
 
+  // Helper function to check if a field is a known metric (to exclude from dimensions)
+  const isKnownMetricForEmail = (field: string): boolean => {
+    const knownMetrics = [
+      'impressions', 'clicks', 'spend', 'conversions', 'ctr', 'cpc', 'reach', 'frequency',
+      'cost_per_conversion', 'conversion_rate', 'actions', 'cost_per_action_type',
+      'skan_app_install', 'skan_cost_per_app_install', 'skan_purchase', 'skan_cost_per_purchase'
+    ];
+    return knownMetrics.includes(field);
+  };
+
   // Generate simple data table for email
   const generateEmailTable = (): string => {
     if (!hasData || data.length === 0) {
       return '<p style="color: #6b7280; text-align: center; padding: 20px;">No detailed data available</p>';
     }
     
-    const headers = Object.keys(data[0]);
+    // Get the same headers logic as the main report
+    const standardHeaders = ['date_start', 'date_stop'];
+    
+    // Dimension fields that are not metrics (like age, gender, placement, etc.)
+    const commonDimensions = ['age', 'gender', 'placement', 'platform_position', 'publisher_platform', 'device_platform'];
+    const dimensionHeaders = Object.keys(data[0]).filter(key => 
+      key !== 'date_start' && key !== 'date_stop' && 
+      !config.metrics.includes(key) &&
+      !key.startsWith('_') && // Exclude internal fields
+      (commonDimensions.includes(key) || !isKnownMetricForEmail(key)) // Only include known dimensions or unknown fields that aren't metrics
+    );
+    
+    // Add selected metrics
+    const metricHeaders = config.metrics.filter(metric => 
+      Object.keys(data[0]).includes(metric)
+    );
+    
+    const allHeaders = [...standardHeaders, ...dimensionHeaders, ...metricHeaders];
+    const headers = allHeaders.filter(header => Object.keys(data[0]).includes(header));
     const maxRows = Math.min(data.length, 10); // Limit to 10 rows for email
     
     return `

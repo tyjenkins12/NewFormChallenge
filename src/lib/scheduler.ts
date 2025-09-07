@@ -9,6 +9,7 @@ import { reportAuthTokens } from './auth-tokens';
 import { getBaseUrl } from './utils/base-url';
 import { getCronExpressionForCadence, getNextCronExecution, getTimeUntilNextCron } from './utils/cron-utils';
 import { v4 as uuidv4 } from 'uuid';
+import { db } from './db';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -22,12 +23,48 @@ class ReportScheduler {
   private scheduledTimeoutId: NodeJS.Timeout | null = null;
   private isGeneratingReport: boolean = false;
   private lockFilePath = path.join(process.cwd(), '.report-generation.lock');
+  private configTimestamp: number = 0;
+  private instanceId: string = uuidv4();
+  private instanceFilePath = path.join(process.cwd(), '.scheduler-instance.json');
 
   static getInstance(): ReportScheduler {
     if (!ReportScheduler.instance) {
       ReportScheduler.instance = new ReportScheduler();
     }
     return ReportScheduler.instance;
+  }
+
+  private async registerAsActiveInstance(): Promise<void> {
+    const instanceData = {
+      instanceId: this.instanceId,
+      timestamp: Date.now(),
+      pid: process.pid
+    };
+    
+    try {
+      await fs.writeFile(this.instanceFilePath, JSON.stringify(instanceData, null, 2));
+      console.log(`🔗 Registered as active instance: ${this.instanceId}`);
+    } catch (error) {
+      console.error('Failed to register instance:', error);
+    }
+  }
+
+  private async isActiveInstance(): Promise<boolean> {
+    try {
+      const data = await fs.readFile(this.instanceFilePath, 'utf8');
+      const instanceData = JSON.parse(data);
+      const isActive = instanceData.instanceId === this.instanceId;
+      
+      if (!isActive) {
+        console.log(`❌ Instance ${this.instanceId} is no longer active (active: ${instanceData.instanceId})`);
+      }
+      
+      return isActive;
+    } catch (error) {
+      // If file doesn't exist, assume we're active
+      console.log(`🔗 No instance file found, assuming ${this.instanceId} is active`);
+      return true;
+    }
   }
 
   static async getInstanceAsync(): Promise<ReportScheduler> {
@@ -50,23 +87,39 @@ class ReportScheduler {
       // Handle both old format (just config) and new format (config + status)
       if (data.config) {
         // New format with config, status, and reportRuns
-        this.config = data.config;
+        // Only update config if we don't have one in memory, but always update status
+        if (!this.config) {
+          this.config = data.config;
+          console.log('📂 Scheduler: Loaded config from file');
+        } else {
+          console.log('📂 Scheduler: Using existing config in memory:', this.config.platform);
+        }
+        
+        // Always load status and reportRuns from file (this is the fix!)
         this.status = { ...this.status, ...data.status };
         this.reportRuns = data.reportRuns || [];
-        console.log('📂 Scheduler: Loaded config and status from file');
-        console.log('📂 Restored state:', {
+        
+        console.log('📂 Scheduler: Updated status from file');
+        console.log('📂 Current state:', {
           cadence: this.config?.cadence,
+          platform: this.config?.platform,
           isRunning: this.status?.isRunning,
-          nextRun: this.status?.nextRun
+          nextRun: this.status?.nextRun,
+          lastRun: this.status?.lastRun,
+          reportPath: this.status?.reportPath
         });
       } else {
         // Old format (just config)
-        this.config = data;
-        console.log('📂 Scheduler: Loaded config from file (old format)');
+        if (!this.config) {
+          this.config = data;
+          console.log('📂 Scheduler: Loaded config from file (old format)');
+        }
       }
     } catch (error) {
       console.log('📂 Scheduler: No config file found');
-      this.config = null;
+      if (!this.config) {
+        this.config = null;
+      }
     }
   }
 
@@ -135,7 +188,7 @@ class ReportScheduler {
     
     // Clear any existing report files
     try {
-      const reportsDir = path.join(process.cwd(), 'public', 'reports');
+      const reportsDir = path.join(process.cwd(), 'private', 'reports');
       const files = await fs.readdir(reportsDir);
       for (const file of files) {
         if (file.startsWith('report-') && file.endsWith('.html')) {
@@ -163,18 +216,86 @@ class ReportScheduler {
 
   async scheduleReport(config: ReportConfig): Promise<void> {
     console.log('Scheduler: Received config:', JSON.stringify(config, null, 2));
+    
+    // Register this instance as the active one (invalidates old instances)
+    await this.registerAsActiveInstance();
+    
+    // Delete the old config file first to prevent reverting
+    try {
+      await fs.unlink(this.configFilePath);
+      console.log('🗑️ Deleted old config file to prevent reverting');
+    } catch (error) {
+      // File might not exist, which is fine
+      console.log('📂 No old config file to delete');
+    }
+    
     this.config = { ...config, id: config.id || uuidv4() };
+    this.configTimestamp = Date.now(); // Mark when this config was set
     console.log('Scheduler: Config stored with ID:', this.config.id);
     console.log('Config cadence after setting:', this.config.cadence);
+    console.log('🔧 New config platform:', this.config.platform);
+    console.log('🔧 Config timestamp:', this.configTimestamp);
+    
+    // Save config to database if it has tokenSettings
+    if (this.config.tokenSettings) {
+      try {
+        console.log('🔧 Saving tokenSettings to database:', this.config.tokenSettings);
+        
+        // First try to find existing config
+        const existingConfig = await db.reportConfig.findFirst({
+          where: { name: this.config.platform }
+        });
+        
+        if (existingConfig) {
+          // Update existing config with tokenSettings
+          await db.reportConfig.update({
+            where: { id: existingConfig.id },
+            data: {
+              tokenSettings: this.config.tokenSettings,
+              updatedAt: new Date()
+            }
+          });
+          console.log('🔧 Updated existing config with tokenSettings');
+        } else {
+          // Create new config with tokenSettings
+          await db.reportConfig.create({
+            data: {
+              name: this.config.platform,
+              description: `${this.config.platform} report configuration`,
+              schedule: this.config.cadence || 'manual',
+              enabled: true,
+              allowedSites: [],
+              tokenSettings: this.config.tokenSettings
+            }
+          });
+          console.log('🔧 Created new config with tokenSettings');
+        }
+      } catch (dbError) {
+        console.error('⚠️ Failed to save tokenSettings to database:', dbError);
+        // Continue with in-memory operations even if DB save fails
+      }
+    }
     
     // Save config to file for persistence across API calls
     await this.saveConfig();
     
-    // Stop existing task
+    // Stop existing scheduled tasks and timeouts
     if (this.currentTask) {
       this.currentTask.destroy();
       this.currentTask = null;
+      console.log('🛑 Stopped existing cron task');
     }
+    
+    if (this.scheduledTimeoutId) {
+      clearTimeout(this.scheduledTimeoutId);
+      this.scheduledTimeoutId = null;
+      console.log('🛑 Cleared existing scheduled timeout');
+    }
+    
+    // Reset scheduling status
+    this.status.isRunning = false;
+    this.status.nextRun = undefined;
+    console.log('🛑 Reset scheduler status for new config');
 
     console.log('About to check cadence, current config:', this.config?.cadence);
     
@@ -262,11 +383,28 @@ class ReportScheduler {
       this.scheduledTimeoutId = null;
     }
     
-    this.scheduledTimeoutId = setTimeout(() => {
-      console.log(`⚡ Scheduled timeout triggered (ID: ${this.scheduledTimeoutId}) - running report`);
+    this.scheduledTimeoutId = setTimeout(async () => {
+      console.log(`⚡ Scheduled timeout triggered (ID: ${this.scheduledTimeoutId}) - checking if instance is active`);
       
       // Clear the timeout ID immediately to prevent duplicates
       this.scheduledTimeoutId = null;
+      
+      // Check if this instance is still the active one
+      const isActive = await this.isActiveInstance();
+      if (!isActive) {
+        console.log('🚫 Timeout cancelled - instance is no longer active');
+        return;
+      }
+      
+      // Validate that this timeout is still for the current config
+      if (!this.config || this.config.platform !== config.platform || this.config.cadence !== config.cadence) {
+        console.log('🚫 Timeout callback cancelled - config has changed');
+        console.log('🚫 Current config:', this.config?.platform, this.config?.cadence);
+        console.log('🚫 Expected config:', config.platform, config.cadence);
+        return;
+      }
+      
+      console.log(`✅ Instance ${this.instanceId} is active, running report`);
       
       this.runReport().then(async () => {
         console.log('📅 Report completed, scheduling next run');
@@ -284,6 +422,8 @@ class ReportScheduler {
     // Mark that we have a scheduled task (even though it's a timeout, not cron)
     this.status.isRunning = true;
     console.log('✅ Status.isRunning set to true');
+    console.log('✅ New schedule active for platform:', config.platform, 'cadence:', config.cadence);
+    console.log('✅ Next run scheduled for:', this.status.nextRun?.toLocaleString());
     
     // Save the updated status to file
     await this.saveConfig();
@@ -351,7 +491,14 @@ class ReportScheduler {
   }
 
   async runReport(): Promise<ReportRun> {
-    console.log('Scheduler: Running report...');
+    console.log(`Scheduler: Running report with instance ${this.instanceId}...`);
+    
+    // Check if this instance is still active
+    const isActive = await this.isActiveInstance();
+    if (!isActive) {
+      console.log('🚫 Report cancelled - instance is no longer active');
+      throw new Error('Report cancelled - instance is no longer active');
+    }
     
     // Prevent multiple reports from running simultaneously using file-based lock
     try {
@@ -443,7 +590,7 @@ class ReportScheduler {
       const reportHtml = await generateReport(data, summary, this.config);
       
       // Save report to file system
-      const reportsDir = path.join(process.cwd(), 'public', 'reports');
+      const reportsDir = path.join(process.cwd(), 'private', 'reports');
       await fs.mkdir(reportsDir, { recursive: true });
       const reportPath = path.join(reportsDir, `report-${runId}.html`);
       await fs.writeFile(reportPath, reportHtml);
@@ -452,17 +599,89 @@ class ReportScheduler {
       run.reportPath = reportPath;
       run.reportUrl = `/reports/report-${runId}.html`;
       
+      // Save report to database for persistent token validation
+      try {
+        // First, try to find or create the ReportConfig in database
+        let configRecord = await db.reportConfig.findFirst({
+          where: { name: this.config.platform }
+        });
+        
+        if (!configRecord) {
+          configRecord = await db.reportConfig.create({
+            data: {
+              name: this.config.platform,
+              description: `${this.config.platform} report configuration`,
+              schedule: this.config.cadence || 'manual',
+              enabled: true,
+              allowedSites: [],
+              tokenSettings: this.config.tokenSettings
+            }
+          });
+          console.log('🔧 Created new ReportConfig for database report');
+        }
+        
+        // Create ReportRun record
+        const reportRunRecord = await db.reportRun.create({
+          data: {
+            id: runId,
+            configId: configRecord.id,
+            status: 'COMPLETED',
+            startedAt: new Date(),
+            completedAt: new Date(),
+            duration: 0,
+            retryCount: 0
+          }
+        });
+        
+        // Create Report record
+        const reportRecord = await db.report.create({
+          data: {
+            id: runId,
+            runId: reportRunRecord.id,
+            configId: configRecord.id,
+            slug: `report-${runId}`,
+            title: `${this.config.platform.toUpperCase()} Insight Report`,
+            summary: typeof summary === 'string' ? summary : JSON.stringify(summary),
+            kpis: {
+              totalSpend: data.reduce((sum, d) => sum + (parseFloat(d.spend) || 0), 0),
+              totalImpressions: data.reduce((sum, d) => sum + (parseInt(d.impressions) || 0), 0),
+              recordCount: data.length
+            },
+            rawData: data,
+            emailHtml: null,
+            deliveryMethod: this.config.delivery || 'link',
+            deliveryTarget: this.config.email || null,
+            isPublic: false // Always false for security
+          }
+        });
+        
+        console.log('🔧 Saved report to database:', reportRecord.id);
+      } catch (dbError) {
+        console.error('⚠️ Failed to save report to database:', dbError);
+        // Don't fail the entire report generation if DB save fails
+      }
+      
+      // Check if tokens are enabled in config and update global settings accordingly
+      if (this.config.tokenSettings) {
+        // Always update global settings based on current config
+        console.log(`🔧 Config tokenSettings:`, this.config.tokenSettings);
+        console.log(`🔧 Before update - areTokensRequired()=${reportAuthTokens.areTokensRequired()}`);
+        
+        reportAuthTokens.updateConfig({
+          defaultExpirationHours: this.config.tokenSettings.expirationHours || 168,
+          allowTokenRefresh: this.config.tokenSettings.allowRefresh ?? true,
+          requireTokens: this.config.tokenSettings.enabled
+        });
+        
+        console.log(`🔧 After update - areTokensRequired()=${reportAuthTokens.areTokensRequired()}`);
+        console.log(`🔧 Token config:`, reportAuthTokens.getConfig());
+      } else {
+        console.log(`🔧 No tokenSettings in config, global state: areTokensRequired()=${reportAuthTokens.areTokensRequired()}`);
+      }
+      
       // Generate signed URLs if tokens are enabled (either globally or in config)
       const tokensEnabled = this.config.tokenSettings?.enabled || reportAuthTokens.areTokensRequired();
       if (tokensEnabled) {
-        // Apply config-specific token settings
-        if (this.config.tokenSettings) {
-          reportAuthTokens.updateConfig({
-            defaultExpirationHours: this.config.tokenSettings.expirationHours || 168,
-            allowTokenRefresh: this.config.tokenSettings.allowRefresh ?? true,
-            requireTokens: this.config.tokenSettings.enabled
-          });
-        }
         // Get base URL using utility function
         const baseUrl = getBaseUrl();
         console.log('🔗 Using base URL for signed URLs:', baseUrl);

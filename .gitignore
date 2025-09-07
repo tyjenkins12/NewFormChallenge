@@ -45,9 +45,8 @@ test-*.js
 *.log
 dev.log
 
-# Generated reports and PDFs
-/public/reports/*.html
-/public/reports/*.pdf
+# Generated reports and PDFs (private directory)
+/private/
 report-*.pdf
 report-*.html
 

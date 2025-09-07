@@ -3,25 +3,15 @@
     "platform": "meta",
     "metrics": [
       "spend",
-      "impressions",
-      "clicks",
-      "reach",
-      "ctr",
-      "frequency",
-      "actions",
-      "cost_per_action_type",
-      "conversions",
-      "cpc",
-      "cost_per_conversion"
+      "impressions"
     ],
     "level": "adset",
     "breakdowns": [
-      "age",
-      "gender"
+      "age"
     ],
     "dimensions": [],
     "dateRangeEnum": "last7",
-    "cadence": "manual",
+    "cadence": "hourly",
     "cronExpression": "",
     "delivery": "email",
     "email": "tyjen1218@gmail.com",
@@ -34,28 +24,29 @@
       "allowRefresh": true
     },
     "demoMode": {
-      "enabled": false,
-      "accelerated": false
+      "enabled": true,
+      "accelerated": true
     },
-    "id": "41dad18c-876b-4135-ac53-fb1eeba9078a"
+    "id": "e4ccd860-9d78-496c-b850-be776eb6a89a"
   },
   "status": {
-    "isRunning": false,
-    "lastRun": "2025-09-07T17:57:19.244Z",
-    "reportPath": "http://localhost:3002/reports/report-4e8460bf-69cc-4f35-a1b1-a8b73dc9d7da.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXBvcnRJZCI6IjRlODQ2MGJmLTY5Y2MtNGYzNS1hMWIxLWE4YjczZGM5ZDdkYSIsInJlcG9ydFR5cGUiOiJodG1sIiwiZXhwaXJlc0F0IjoxNzU3ODcyNjI1LCJwZXJtaXNzaW9ucyI6WyJyZWFkIiwiZG93bmxvYWQiXSwiaWF0IjoxNzU3MjY3ODI1LCJleHAiOjE3NTc4NzI2MjUsImF1ZCI6InJlcG9ydC1hY2Nlc3MiLCJpc3MiOiJzY2hlZHVsZWQtaW5zaWdodC1yZXBvcnRzIiwianRpIjoiNGU4NDYwYmYtNjljYy00ZjM1LWExYjEtYThiNzNkYzlkN2RhLTE3NTcyNjc4MjUyNjMtMXNvcGlybCJ9.Co-7r9xX3PiKBomDCneHFw9Khvf806qmpGj_yYrdmdQ",
-    "pdfPath": "http://localhost:3002/reports/report-4e8460bf-69cc-4f35-a1b1-a8b73dc9d7da.pdf?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXBvcnRJZCI6IjRlODQ2MGJmLTY5Y2MtNGYzNS1hMWIxLWE4YjczZGM5ZDdkYSIsInJlcG9ydFR5cGUiOiJwZGYiLCJleHBpcmVzQXQiOjE3NTc4NzI2MzgsInBlcm1pc3Npb25zIjpbInJlYWQiLCJkb3dubG9hZCJdLCJpYXQiOjE3NTcyNjc4MzgsImV4cCI6MTc1Nzg3MjYzOCwiYXVkIjoicmVwb3J0LWFjY2VzcyIsImlzcyI6InNjaGVkdWxlZC1pbnNpZ2h0LXJlcG9ydHMiLCJqdGkiOiI0ZTg0NjBiZi02OWNjLTRmMzUtYTFiMS1hOGI3M2RjOWQ3ZGEtMTc1NzI2NzgzODQ5Ny1raDViZSJ9.MOiRdXLz2wdSt4vCpNz78xlUVAY1wWY5jSV6xrwjRc0"
+    "isRunning": true,
+    "nextRun": "2025-09-07T20:41:53.973Z",
+    "lastRun": "2025-09-07T20:40:53.970Z",
+    "reportPath": "http://localhost:3007/reports/report-2d9f110f-9920-4437-9183-203467cf7f84.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXBvcnRJZCI6IjJkOWYxMTBmLTk5MjAtNDQzNy05MTgzLTIwMzQ2N2NmN2Y4NCIsInJlcG9ydFR5cGUiOiJodG1sIiwiZXhwaXJlc0F0IjoxNzU3ODgyNDQwLCJwZXJtaXNzaW9ucyI6WyJyZWFkIiwiZG93bmxvYWQiXSwiaWF0IjoxNzU3Mjc3NjQwLCJleHAiOjE3NTc4ODI0NDAsImF1ZCI6InJlcG9ydC1hY2Nlc3MiLCJpc3MiOiJzY2hlZHVsZWQtaW5zaWdodC1yZXBvcnRzIiwianRpIjoiMmQ5ZjExMGYtOTkyMC00NDM3LTkxODMtMjAzNDY3Y2Y3Zjg0LTE3NTcyNzc2NDAwMjQtNWh2cXMifQ.iXY-6rFFQxE1xmPHc_HMPBK5H5MVvCJtbf2_TKDztao",
+    "pdfPath": "http://localhost:3007/reports/report-2d9f110f-9920-4437-9183-203467cf7f84.pdf?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXBvcnRJZCI6IjJkOWYxMTBmLTk5MjAtNDQzNy05MTgzLTIwMzQ2N2NmN2Y4NCIsInJlcG9ydFR5cGUiOiJwZGYiLCJleHBpcmVzQXQiOjE3NTc4ODI0NTMsInBlcm1pc3Npb25zIjpbInJlYWQiLCJkb3dubG9hZCJdLCJpYXQiOjE3NTcyNzc2NTMsImV4cCI6MTc1Nzg4MjQ1MywiYXVkIjoicmVwb3J0LWFjY2VzcyIsImlzcyI6InNjaGVkdWxlZC1pbnNpZ2h0LXJlcG9ydHMiLCJqdGkiOiIyZDlmMTEwZi05OTIwLTQ0MzctOTE4My0yMDM0NjdjZjdmODQtMTc1NzI3NzY1MzM1OC1rZDQ1eWoifQ.copffijhZkrjRjpp2obfckZxnAUEEGNNibX7l2ADWdY"
   },
   "reportRuns": [
     {
-      "id": "4e8460bf-69cc-4f35-a1b1-a8b73dc9d7da",
-      "configId": "41dad18c-876b-4135-ac53-fb1eeba9078a",
-      "timestamp": "2025-09-07T17:56:35.868Z",
+      "id": "2d9f110f-9920-4437-9183-203467cf7f84",
+      "configId": "e4ccd860-9d78-496c-b850-be776eb6a89a",
+      "timestamp": "2025-09-07T20:40:33.698Z",
       "status": "success",
-      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/public/reports/report-4e8460bf-69cc-4f35-a1b1-a8b73dc9d7da.html",
-      "reportUrl": "/reports/report-4e8460bf-69cc-4f35-a1b1-a8b73dc9d7da.html",
-      "signedUrl": "http://localhost:3002/reports/report-4e8460bf-69cc-4f35-a1b1-a8b73dc9d7da.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXBvcnRJZCI6IjRlODQ2MGJmLTY5Y2MtNGYzNS1hMWIxLWE4YjczZGM5ZDdkYSIsInJlcG9ydFR5cGUiOiJodG1sIiwiZXhwaXJlc0F0IjoxNzU3ODcyNjI1LCJwZXJtaXNzaW9ucyI6WyJyZWFkIiwiZG93bmxvYWQiXSwiaWF0IjoxNzU3MjY3ODI1LCJleHAiOjE3NTc4NzI2MjUsImF1ZCI6InJlcG9ydC1hY2Nlc3MiLCJpc3MiOiJzY2hlZHVsZWQtaW5zaWdodC1yZXBvcnRzIiwianRpIjoiNGU4NDYwYmYtNjljYy00ZjM1LWExYjEtYThiNzNkYzlkN2RhLTE3NTcyNjc4MjUyNjMtMXNvcGlybCJ9.Co-7r9xX3PiKBomDCneHFw9Khvf806qmpGj_yYrdmdQ",
-      "pdfUrl": "/reports/report-4e8460bf-69cc-4f35-a1b1-a8b73dc9d7da.pdf",
-      "signedPdfUrl": "http://localhost:3002/reports/report-4e8460bf-69cc-4f35-a1b1-a8b73dc9d7da.pdf?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXBvcnRJZCI6IjRlODQ2MGJmLTY5Y2MtNGYzNS1hMWIxLWE4YjczZGM5ZDdkYSIsInJlcG9ydFR5cGUiOiJwZGYiLCJleHBpcmVzQXQiOjE3NTc4NzI2MzgsInBlcm1pc3Npb25zIjpbInJlYWQiLCJkb3dubG9hZCJdLCJpYXQiOjE3NTcyNjc4MzgsImV4cCI6MTc1Nzg3MjYzOCwiYXVkIjoicmVwb3J0LWFjY2VzcyIsImlzcyI6InNjaGVkdWxlZC1pbnNpZ2h0LXJlcG9ydHMiLCJqdGkiOiI0ZTg0NjBiZi02OWNjLTRmMzUtYTFiMS1hOGI3M2RjOWQ3ZGEtMTc1NzI2NzgzODQ5Ny1raDViZSJ9.MOiRdXLz2wdSt4vCpNz78xlUVAY1wWY5jSV6xrwjRc0"
+      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/private/reports/report-2d9f110f-9920-4437-9183-203467cf7f84.html",
+      "reportUrl": "/reports/report-2d9f110f-9920-4437-9183-203467cf7f84.html",
+      "signedUrl": "http://localhost:3007/reports/report-2d9f110f-9920-4437-9183-203467cf7f84.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXBvcnRJZCI6IjJkOWYxMTBmLTk5MjAtNDQzNy05MTgzLTIwMzQ2N2NmN2Y4NCIsInJlcG9ydFR5cGUiOiJodG1sIiwiZXhwaXJlc0F0IjoxNzU3ODgyNDQwLCJwZXJtaXNzaW9ucyI6WyJyZWFkIiwiZG93bmxvYWQiXSwiaWF0IjoxNzU3Mjc3NjQwLCJleHAiOjE3NTc4ODI0NDAsImF1ZCI6InJlcG9ydC1hY2Nlc3MiLCJpc3MiOiJzY2hlZHVsZWQtaW5zaWdodC1yZXBvcnRzIiwianRpIjoiMmQ5ZjExMGYtOTkyMC00NDM3LTkxODMtMjAzNDY3Y2Y3Zjg0LTE3NTcyNzc2NDAwMjQtNWh2cXMifQ.iXY-6rFFQxE1xmPHc_HMPBK5H5MVvCJtbf2_TKDztao",
+      "pdfUrl": "/reports/report-2d9f110f-9920-4437-9183-203467cf7f84.pdf",
+      "signedPdfUrl": "http://localhost:3007/reports/report-2d9f110f-9920-4437-9183-203467cf7f84.pdf?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXBvcnRJZCI6IjJkOWYxMTBmLTk5MjAtNDQzNy05MTgzLTIwMzQ2N2NmN2Y4NCIsInJlcG9ydFR5cGUiOiJwZGYiLCJleHBpcmVzQXQiOjE3NTc4ODI0NTMsInBlcm1pc3Npb25zIjpbInJlYWQiLCJkb3dubG9hZCJdLCJpYXQiOjE3NTcyNzc2NTMsImV4cCI6MTc1Nzg4MjQ1MywiYXVkIjoicmVwb3J0LWFjY2VzcyIsImlzcyI6InNjaGVkdWxlZC1pbnNpZ2h0LXJlcG9ydHMiLCJqdGkiOiIyZDlmMTEwZi05OTIwLTQ0MzctOTE4My0yMDM0NjdjZjdmODQtMTc1NzI3NzY1MzM1OC1rZDQ1eWoifQ.copffijhZkrjRjpp2obfckZxnAUEEGNNibX7l2ADWdY"
     }
   ]
 }

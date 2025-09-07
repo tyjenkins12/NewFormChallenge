@@ -169,7 +169,7 @@ export async function savePdfReport(htmlContent: string, reportId: string, optio
     const pdfBuffer = await generatePdfFromHtml(htmlContent, options);
     
     // Save PDF to public directory
-    const reportsDir = path.join(process.cwd(), 'public', 'reports');
+    const reportsDir = path.join(process.cwd(), 'private', 'reports');
     await fs.mkdir(reportsDir, { recursive: true });
     
     const pdfPath = path.join(reportsDir, `report-${reportId}.pdf`);
@@ -208,7 +208,7 @@ export async function createEmailAttachment(htmlContent: string, reportId: strin
     
     // Also save email PDF to disk for debugging
     try {
-      const reportsDir = path.join(process.cwd(), 'public', 'reports');
+      const reportsDir = path.join(process.cwd(), 'private', 'reports');
       const debugPath = path.join(reportsDir, `email-debug-${reportId}.pdf`);
       await fs.writeFile(debugPath, pdfBuffer);
       console.log('Email PDF debug copy saved to:', debugPath);
