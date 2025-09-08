@@ -2,10 +2,8 @@
   "config": {
     "platform": "meta",
     "metrics": [
-      "ctr",
       "spend",
-      "impressions",
-      "clicks"
+      "impressions"
     ],
     "level": "adset",
     "breakdowns": [
@@ -13,13 +11,13 @@
     ],
     "dimensions": [],
     "dateRangeEnum": "last14",
-    "cadence": "manual",
+    "cadence": "hourly",
     "cronExpression": "",
-    "delivery": "link",
-    "email": "",
+    "delivery": "email",
+    "email": "tyjen1218@gmail.com",
     "timeIncrement": "7",
     "reportType": "BASIC",
-    "pdfAttachment": false,
+    "pdfAttachment": true,
     "tokenSettings": {
       "enabled": false,
       "expirationHours": 168,
@@ -29,23 +27,11 @@
       "enabled": false,
       "accelerated": false
     },
-    "id": "768c2d11-bf10-4efe-963e-88eb1c83cb37"
+    "id": "b095a208-3019-4716-8de8-13b8d3d617ca"
   },
   "status": {
-    "isRunning": false,
-    "lastRun": "2025-09-07T21:13:31.863Z",
-    "reportPath": "/reports/report-69473258-467c-49f9-9d3e-3dfa848919db.html",
-    "pdfPath": "/reports/report-69473258-467c-49f9-9d3e-3dfa848919db.pdf"
+    "isRunning": true,
+    "nextRun": "2025-09-08T01:33:11.654Z"
   },
-  "reportRuns": [
-    {
-      "id": "69473258-467c-49f9-9d3e-3dfa848919db",
-      "configId": "768c2d11-bf10-4efe-963e-88eb1c83cb37",
-      "timestamp": "2025-09-07T21:13:17.944Z",
-      "status": "success",
-      "reportPath": "/Users/tyjenkins/Documents/NewFormProd/scheduled-insight-reports/private/reports/report-69473258-467c-49f9-9d3e-3dfa848919db.html",
-      "reportUrl": "/reports/report-69473258-467c-49f9-9d3e-3dfa848919db.html",
-      "pdfUrl": "/reports/report-69473258-467c-49f9-9d3e-3dfa848919db.pdf"
-    }
-  ]
+  "reportRuns": []
 }

@@ -336,7 +336,11 @@ class ReportScheduler {
     // Check if demo mode accelerated scheduling is enabled
     const isAccelerated = config.demoMode?.enabled && config.demoMode?.accelerated;
     
-    if (config.cadence === 'custom' && config.cronExpression) {
+    // Special handling for hourly cadence - run 1 hour from now instead of cron schedule
+    if (config.cadence === 'hourly' && !isAccelerated) {
+      nextRun = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+      console.log('🕐 Hourly interval-based scheduling (1 hour from now):', nextRun.toLocaleString());
+    } else if (config.cadence === 'custom' && config.cronExpression) {
       // Use custom cron expression
       cronExpression = config.cronExpression;
       console.log('🕐 Using custom cron expression:', cronExpression);
@@ -346,8 +350,8 @@ class ReportScheduler {
       console.log('🕐 Using built-in cron expression for', config.cadence, ':', cronExpression);
     }
 
-    if (cronExpression && !isAccelerated) {
-      // Use cron-parser for precise scheduling
+    if (cronExpression && !isAccelerated && config.cadence !== 'hourly') {
+      // Use cron-parser for precise scheduling (except hourly which uses interval-based)
       const nextExecution = getNextCronExecution(cronExpression);
       if (nextExecution) {
         nextRun = nextExecution;
@@ -356,8 +360,8 @@ class ReportScheduler {
         console.error('❌ Failed to parse cron expression, falling back to legacy logic');
         nextRun = this.calculateLegacyNextRun(config);
       }
-    } else {
-      // Use legacy logic for demo mode or fallback
+    } else if (config.cadence !== 'hourly') {
+      // Use legacy logic for demo mode or fallback (except hourly which is handled above)
       nextRun = this.calculateLegacyNextRun(config, isAccelerated);
       if (isAccelerated) {
         console.log('⚡ Demo mode accelerated schedule enabled');
